@@ -1,0 +1,37 @@
+/* Reset & theme */
+:root{ color-scheme: dark; --bg:#0f172a; --panel:#111827; --muted:#94a3b8; --border:#1f2937; --text:#e5e7eb; --accent:#2563eb; }
+*{ box-sizing:border-box }
+html,body{ height:100% }
+body{ margin:0; background:var(--bg); color:var(--text); font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji"; }
+
+/* Layout */
+.container{ max-width:960px; margin:0 auto; padding:24px; display:grid; gap:16px }
+.header{ text-align:center; }
+.header h1{ margin:.2rem 0 0 0; font-size: clamp(1.4rem, 2.5vw, 2rem); }
+.muted{ color:var(--muted) }
+.small{ font-size:.9rem }
+
+.card{ background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01)); border:1px solid var(--border); border-radius:16px; padding:16px; }
+.grid-2{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px }
+@media (max-width:720px){ .grid-2{ grid-template-columns:1fr } }
+
+/* Form */
+.field label{ display:block; margin-bottom:6px }
+.row{ display:grid; grid-template-columns:1fr 120px; gap:8px }
+input, select{ width:100%; padding:10px 12px; border-radius:12px; border:1px solid var(--border); background:#0b1220; color:var(--text); }
+input::placeholder{ color:#60708c }
+.actions{ grid-column:1 / -1; display:flex; gap:8px; flex-wrap:wrap }
+button{ padding:10px 16px; border-radius:12px; border:1px solid transparent; background:var(--accent); color:white; cursor:pointer; font-weight:600 }
+button:hover{ filter:brightness(1.1) }
+button.ghost{ background:transparent; border-color:var(--border); color:var(--text) }
+
+/* Gauge & stats */
+.gauge-wrap{ margin:8px auto 0; max-width:520px }
+.stats{ display:grid; grid-template-columns: repeat(3,1fr); gap:8px; margin-top:12px }
+.stat{ border:1px solid var(--border); background:#0b1220; padding:12px; border-radius:12px; display:flex; flex-direction:column; gap:2px }
+.stat .k{ color:var(--muted); font-size:.85rem }
+.stat .v{ font-weight:700; font-size:1.2rem }
+
+.note{ margin-top:10px; color:var(--muted) }
+
+.footer{ text-align:center; color:var(--muted); margin-top:8px; font-size:.85rem }

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Účinnost – jednoduchá aplikace</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="favicon.ico">
+  </head>
+  <body>
+    <main class="container">
+      <header class="header">
+        <h1>Účinnost – cvičebnice</h1>
+        <p class="muted">Výpočet z výkonů (W / kW / MW)</p>
+      </header>
+
+      <section class="card grid-2">
+        <div class="field">
+          <label for="pinVal">Celkový příkon P<sub>in</sub></label>
+          <div class="row">
+            <input id="pinVal" type="number" inputmode="decimal" placeholder="0" />
+            <select id="pinUnit" aria-label="Jednotka příkonu">
+              <option>W</option>
+              <option selected>kW</option>
+              <option>MW</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="puseVal">Užitečný výkon P<sub>užit</sub></label>
+          <div class="row">
+            <input id="puseVal" type="number" inputmode="decimal" placeholder="0" />
+            <select id="puseUnit" aria-label="Jednotka užitečného výkonu">
+              <option>W</option>
+              <option selected>kW</option>
+              <option>MW</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button id="btnCalc">Vypočítat</button>
+          <button id="btnDemo" class="ghost" title="Předvyplnit ukázkové hodnoty">Ukázka</button>
+          <button id="btnReset" class="ghost">Vymazat</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Výsledek</h2>
+        <p class="muted small">Vzorec: η = P<sub>užit</sub> / P<sub>in</sub> × 100 %</p>
+
+        <div class="gauge-wrap">
+          <svg id="gauge" viewBox="0 0 200 120" width="100%" aria-label="Ukazatel účinnosti">
+            <defs>
+              <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#ef4444"/>
+                <stop offset="50%" stop-color="#f59e0b"/>
+                <stop offset="100%" stop-color="#22c55e"/>
+              </linearGradient>
+            </defs>
+            <path d="M20,110 A90,90 0 1,1 180,110" fill="none" stroke="url(#grad)" stroke-width="18" stroke-linecap="round"/>
+            <g id="needle" transform="translate(100,110) rotate(-120)">
+              <rect x="-2" y="-80" width="4" height="78" rx="2" fill="currentColor"></rect>
+              <circle cx="0" cy="0" r="5" fill="currentColor"></circle>
+            </g>
+            <text id="gaugeText" x="100" y="105" text-anchor="middle" font-size="14">η = 0.0 %</text>
+          </svg>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><span class="k">Účinnost</span><span id="etaOut" class="v">–</span></div>
+          <div class="stat"><span class="k">Ztrátový výkon</span><span id="lossOut" class="v">–</span></div>
+          <div class="stat"><span class="k">Užitečný výkon</span><span id="puseOut" class="v">–</span></div>
+        </div>
+
+        <div id="note" class="note" hidden></div>
+      </section>
+
+      <footer class="footer">
+        © <span id="year"></span> Jednoduchá app – účinnost. Publikovatelné na GitHub Pages bez buildování.
+      </footer>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
