@@ -1,4 +1,4 @@
-```json
+json
 {
 "name": "ucinnost-app",
 "private": true,
@@ -25,4 +25,4 @@
 "vite": "^5.4.9"
 }
 }
-```
+
