@@ -1,8 +1,8 @@
-```js
+js
 export default {
 plugins: {
 tailwindcss: {},
 autoprefixer: {},
 },
 }
-```
+
