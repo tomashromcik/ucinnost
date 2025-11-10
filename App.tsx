@@ -1,28 +1,4 @@
-
-
-
-<AnimatePresence mode="wait">
-<motion.div key={active} initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} exit={{opacity:0,y:-8}} transition={{duration:.25}} className="space-y-4">
-{active===0 && (
-<div className="card p-4">
-<h3 className="text-lg font-semibold mb-1">1. Přečti si zadání</h3>
-<p className="text-sm text-gray-300">{task.text}</p>
-</div>
-)}
-{active===1 && (
-<div className="card p-4 space-y-4">
-<h3 className="text-lg font-semibold">2. Urči dané veličiny</h3>
-<UnitInput label="Celkový příkon P_in" val={known.Pin} set={(v)=> setKnown(k=> ({...k, Pin:v}))} />
-<UnitInput label="Užitečný výkon P_užit" val={known.Puse} set={(v)=> setKnown(k=> ({...k, Puse:v}))} />
-<p className="text-xs text-gray-400">Můžeš libovolně přepínat W / kW / MW – vše se přepočítává.</p>
-</div>
-)}
-{active===2 && (
-<div className="card p-4 space-y-2">
-<h3 className="text-lg font-semibold">3. Vyber správný vzorec</h3>
-<div className="card p-4 flex items-center justify-between">
-<div className="text-lg">η = P<u>užitečný</u> / P<u>celkový</u> × 100 %</div>
-<span className="badge">✔️ Správně</span>
+import React, { useMemo, useState } from 'react'
 </div>
 <p className="text-sm text-gray-300">Stejný tvar platí i pro energie (E), zde pracujeme s výkony.</p>
 </div>
@@ -72,4 +48,3 @@
 </MotionConfig>
 )
 }
-
