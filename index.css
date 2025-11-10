@@ -1,0 +1,22 @@
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+:root { color-scheme: dark; }
+
+
+/* drobné utility */
+.card { @apply rounded-2xl border border-gray-800 bg-gray-900/60 backdrop-blur; }
+.btn { @apply inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-medium border border-gray-700 bg-gray-800 hover:bg-gray-700 transition; }
+.btn-primary { @apply bg-blue-600 border-blue-500 hover:bg-blue-500; }
+.badge { @apply inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs border border-gray-700 bg-gray-800; }
+.input { @apply w-full px-3 py-2 rounded-xl bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500; }
+.select { @apply input; }
+.label { @apply text-sm text-gray-300; }
+
+
+.progress { @apply w-full h-2 rounded-full bg-gray-800; }
+.progress > span { @apply block h-2 rounded-full bg-blue-500; }
+```
