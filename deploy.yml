@@ -31,7 +31,7 @@ with:
 node-version: 20
 cache: 'npm'
 - name: Install deps
-run: npm ci
+run: npm install
 - name: Build
 # Důležité: předáme base=/název-repa/ aby fungovaly assety na Pages
 run: |
