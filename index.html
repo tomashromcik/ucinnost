@@ -1,87 +1,69 @@
 <!DOCTYPE html>
 <html lang="cs">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Účinnost – jednoduchá aplikace</title>
-    <link rel="stylesheet" href="style.css" />
-    <link rel="icon" href="favicon.ico">
-  </head>
-  <body>
-    <main class="container">
-      <header class="header">
-        <h1>Účinnost – cvičebnice</h1>
-        <p class="muted">Výpočet z výkonů (W / kW / MW)</p>
-      </header>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Účinnost — generátor slovních úloh (P₀, P)</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" href="favicon.ico"/>
+</head>
+<body>
+  <main class="container">
+    <header class="topbar">
+      <div class="brand">⚙️ Účinnost — generátor úloh</div>
+      <div class="muted">P₀ (příkon), P (užitečný výkon) • W / kW / MW • desetinná čárka</div>
+    </header>
 
-      <section class="card grid-2">
-        <div class="field">
-          <label for="pinVal">Celkový příkon P<sub>in</sub></label>
-          <div class="row">
-            <input id="pinVal" type="number" inputmode="decimal" placeholder="0" />
-            <select id="pinUnit" aria-label="Jednotka příkonu">
-              <option>W</option>
-              <option selected>kW</option>
-              <option>MW</option>
-            </select>
+    <section class="layout">
+      <!-- Levý panel: zadání je vidět pořád -->
+      <aside class="card aside">
+        <h2>Zadání</h2>
+        <div id="zadaniText" class="zadani"></div>
+        <div class="note small">Vzorec: <b>η = P / P₀ × 100 %</b></div>
+        <div class="hr"></div>
+        <div id="knownBox" class="small"></div>
+      </aside>
+
+      <!-- Pravý panel: průvodce kroky -->
+      <section class="card flow">
+        <div class="steps">
+          <div class="step active" data-step="0"><span>1</span> Zadání</div>
+          <div class="step" data-step="1"><span>2</span> Zápis</div>
+          <div class="step" data-step="2"><span>3</span> Výpočet</div>
+          <div class="step" data-step="3"><span>4</span> Odpověď</div>
+        </div>
+
+        <div id="screen"></div>
+
+        <div class="row between actions">
+          <button id="btnBack" class="ghost">← Zpět</button>
+          <div class="row gap">
+            <button id="btnCheck" class="primary">✔ Zkontrolovat</button>
+            <button id="btnNext">Pokračovat →</button>
           </div>
         </div>
-
-        <div class="field">
-          <label for="puseVal">Užitečný výkon P<sub>užit</sub></label>
-          <div class="row">
-            <input id="puseVal" type="number" inputmode="decimal" placeholder="0" />
-            <select id="puseUnit" aria-label="Jednotka užitečného výkonu">
-              <option>W</option>
-              <option selected>kW</option>
-              <option>MW</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="actions">
-          <button id="btnCalc">Vypočítat</button>
-          <button id="btnDemo" class="ghost" title="Předvyplnit ukázkové hodnoty">Ukázka</button>
-          <button id="btnReset" class="ghost">Vymazat</button>
-        </div>
       </section>
+    </section>
 
-      <section class="card">
-        <h2>Výsledek</h2>
-        <p class="muted small">Vzorec: η = P<sub>užit</sub> / P<sub>in</sub> × 100 %</p>
+    <section class="card intro">
+      <div class="row gap">
+        <button id="btnNew" class="primary">➕ Nová úloha</button>
+        <button id="btnReset" class="ghost">↺ Reset</button>
+      </div>
+    </section>
 
-        <div class="gauge-wrap">
-          <svg id="gauge" viewBox="0 0 200 120" width="100%" aria-label="Ukazatel účinnosti">
-            <defs>
-              <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stop-color="#ef4444"/>
-                <stop offset="50%" stop-color="#f59e0b"/>
-                <stop offset="100%" stop-color="#22c55e"/>
-              </linearGradient>
-            </defs>
-            <path d="M20,110 A90,90 0 1,1 180,110" fill="none" stroke="url(#grad)" stroke-width="18" stroke-linecap="round"/>
-            <g id="needle" transform="translate(100,110) rotate(-120)">
-              <rect x="-2" y="-80" width="4" height="78" rx="2" fill="currentColor"></rect>
-              <circle cx="0" cy="0" r="5" fill="currentColor"></circle>
-            </g>
-            <text id="gaugeText" x="100" y="105" text-anchor="middle" font-size="14">η = 0.0 %</text>
-          </svg>
-        </div>
+    <section class="card results">
+      <h2>Výsledky a statistika</h2>
+      <div class="grid3">
+        <div class="stat"><span class="k">Správně</span><span id="okCount" class="v">0</span></div>
+        <div class="stat"><span class="k">Chyby</span><span id="errCount" class="v">0</span></div>
+        <div class="stat"><span class="k">Průměrná přesnost</span><span id="avgAcc" class="v">–</span></div>
+      </div>
+    </section>
 
-        <div class="stats">
-          <div class="stat"><span class="k">Účinnost</span><span id="etaOut" class="v">–</span></div>
-          <div class="stat"><span class="k">Ztrátový výkon</span><span id="lossOut" class="v">–</span></div>
-          <div class="stat"><span class="k">Užitečný výkon</span><span id="puseOut" class="v">–</span></div>
-        </div>
+    <footer class="footer">© <span id="year"></span> Cvičebnice účinnosti. P₀/P generátor — čisté HTML, CSS, JS.</footer>
+  </main>
 
-        <div id="note" class="note" hidden></div>
-      </section>
-
-      <footer class="footer">
-        © <span id="year"></span> Jednoduchá app – účinnost. Publikovatelné na GitHub Pages bez buildování.
-      </footer>
-    </main>
-
-    <script src="script.js"></script>
-  </body>
+  <script src="script.js"></script>
+</body>
 </html>
