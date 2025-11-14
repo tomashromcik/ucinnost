@@ -792,6 +792,43 @@ button.ghost:hover {
   white-space: nowrap;
 }
 
+/* základní řádek – tři sloupce: label | střední blok | checkbox */
+.write-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* levý popisek "P₀ =", "P =", "η =" */
+.write-row .title {
+  width: 3.5rem;         /* stejná šířka pro všechny tři řádky */
+  text-align: right;
+  margin-right: 4px;
+}
+
+/* u P₀ a P je střední blok jen <input>, který má flex:1 */
+.write-row > .input {
+  flex: 1;
+}
+
+/* η-řádek: střední blok je <div class="eta-group"> */
+.eta-row .eta-group {
+  flex: 1;                          /* stejná šířka jako [hodnota]+[Vyber] */
+  display: flex;
+  align-items: center;
+  gap: 8px;                         /* mezera mezi boxy v řádku η */
+}
+
+/* oba inputy uvnitř skupiny se dělí o stejnou šířku */
+.eta-row .eta-group .input {
+  flex: 1;
+}
+
+/* "% =" mezi nimi – nechceme, aby se zalamovalo */
+.eta-row .eta-symbol {
+  white-space: nowrap;
+  opacity: 0.85;
+}
 
 
 /* RESPONZIVNÍ */
