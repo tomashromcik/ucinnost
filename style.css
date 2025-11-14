@@ -410,90 +410,87 @@ button.ghost:hover {
   padding-top: 8px;
 }
 
-/* ——— ZÁPIS ——— */
+/* === Úpravy formulářů a výpočtové části (Tomáš Hromčík) === */
 
-#write-section {
-    display: grid;
-    grid-template-columns: auto 1fr auto auto;
-    gap: 8px 12px;
-    margin-bottom: 20px;
+/* Shrnutí zápisu — více prostoru kolem */
+.summary-box {
+    padding: 1rem 1.2rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.05);
 }
 
-.write-label {
+/* Název v shrnutí */
+.summary-title {
     font-weight: 600;
-    padding-top: 6px;
+    margin-bottom: 0.7rem;
+    font-size: 1.05rem;
 }
 
-/* ——— VÝPOČET ——— */
-
-.calc-section {
-    margin-top: 20px;
+/* Každá položka shrnutí na samostatném řádku */
+.summary-line {
+    padding: 0.25rem 0;
+    border-bottom: 1px dotted rgba(255,255,255,0.15);
+}
+.summary-line:last-child {
+    border-bottom: none;
 }
 
-.btn-row {
+/* Tlačítka veličin — aby byly na jednom řádku */
+.inline-buttons {
     display: flex;
-    flex-wrap: nowrap;
-    gap: 8px;
-    margin-bottom: 10px;
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
 }
 
-.full-width {
-    width: 100%;
-    display: block;
-    margin-top: 5px;
-}
-
-/* ——— SHRNUTÍ ZÁPISU ——— */
-
-#summary-box {
-    padding: 14px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.04);
-    margin-bottom: 18px;
-}
-
-.summary-container * {
-    margin-bottom: 4px;
-}
-
-/* ——— MODAL ——— */
-
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-content {
-    background: #111;
-    padding: 22px;
-    border-radius: 14px;
-}
-
-.modal-content img {
-    width: 320px;
-    filter: invert(90%);
-}
-
-.closeModal {
-    position: absolute;
-    right: 20px;
-    top: 15px;
+/* Symbolová tlačítka */
+.inline-buttons button {
+    padding: 6px 10px;
+    font-size: 1rem;
+    border-radius: 6px;
     cursor: pointer;
-    font-size: 28px;
-    color: white;
 }
 
-.triangle-btn {
-    margin-top: 12px;
-    background: #2754ff;
-    padding: 6px 14px;
+/* Input pod tlačítky */
+#formula,
+#subst {
+    margin-top: 0.4rem;
+    margin-bottom: 1.2rem;
+}
+
+/* Odstup sekcí Vzorec, Dosaď, Výsledek, Odpověď */
+.content > div {
+    margin-bottom: 1.6rem;
+}
+
+/* Nadpis "Vzorec", "Dosaď", "Výsledek" – větší mezery */
+.content label {
+    font-weight: 600;
+    margin-bottom: 0.45rem;
+    display: inline-block;
+}
+
+/* Pole ve výpočtu */
+.input {
+    padding: 8px 10px;
+    font-size: 1rem;
+}
+
+/* Box automatické odpovědi */
+#autoAnswer {
+    margin-top: 0.5rem;
+    padding: 0.6rem;
     border-radius: 6px;
 }
+
+/* Tlačítko ZKONTROLOVAT více prostoru nahoře */
+#btnCheck {
+    margin-top: 1rem;
+}
+
+
 
 
 /* RESPONZIVNÍ */
