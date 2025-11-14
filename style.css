@@ -491,6 +491,43 @@ button.ghost:hover {
 }
 
 
+/* ====== TOOL PANEL – TROJÚHELNÍK / KALKULAČKA ====== */
+
+.tool-buttons {
+    display: flex;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.tool-buttons button {
+    padding: 6px 12px;
+    background: #2a2f38;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+}
+
+.tool-buttons button:hover {
+    background: #343b46;
+}
+
+.tool-panel {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    border-radius: 8px;
+    display: none; /* skryto dokud nezvolíme nástroj */
+}
+
+/* SVG aby se pěkně přizpůsobilo šířce */
+.tool-panel svg {
+    width: 100%;
+    max-width: 340px;
+    display: block;
+    margin: 0 auto;
+}
 
 
 /* RESPONZIVNÍ */
