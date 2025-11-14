@@ -672,6 +672,37 @@ button.ghost:hover {
 }
 
 
+/* ---------------------------------------------------------- */
+/*  TLAČÍTKA TROJÚHELNÍK + KALKULAČKA – DARK PANEL STYLE     */
+/* ---------------------------------------------------------- */
+
+.tool-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.tool-buttons button {
+  background: #1b2330;        /* stejná barva jako summary-box */
+  color: #ffffff;             /* bílé písmo */
+  border: 1px solid #2d3a4a;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.tool-buttons button:hover {
+  background: #243041;        /* trochu světlejší při přejetí */
+  border-color: #3a4b5c;
+}
+
+.tool-buttons button:active {
+  background: #131a24;
+}
+
+
 /* RESPONZIVNÍ */
 
 @media (max-width: 640px) {
