@@ -702,6 +702,52 @@ button.ghost:hover {
   background: #131a24;
 }
 
+/* === ZÁPIS — FINÁLNÍ STYLING === */
+
+.write-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.7rem 0;
+}
+
+.write-row .title {
+    width: 3.5rem;      /* Fixní šíře popisku (P₀ =, P =, η =) */
+    text-align: right;
+    margin: 0;
+    font-weight: 600;
+    color: #fff;
+}
+
+/* Hlavní textová pole (sjednocená velikost) */
+.big-input {
+    width: 170px;        /* stejné jako uvedené ve screenshotu */
+}
+
+/* Select pro jednotky */
+.unit-select {
+    width: 90px;
+}
+
+/* η řádek */
+.eta-row .eta-eq {
+    margin: 0 0.5rem;
+    color: #aaa;
+}
+
+/* Checkboxy hledané veličiny */
+.unknown-label {
+    margin-left: auto;
+    font-size: 0.85rem;
+    opacity: 0.9;
+}
+
+/* Zajištění stejného zarovnání v jednom řádku */
+.eta-row input.big-input {
+    width: 170px;
+}
+
+
 
 /* RESPONZIVNÍ */
 
