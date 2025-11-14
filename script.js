@@ -435,6 +435,13 @@ function renderStep2() {
 
   S(`
     <h2 class="subtitle">2. Výpočet a odpověď</h2>
+    <div class="tool-buttons">
+  <button type="button" id="btnTriangle">🔺 Trojúhelník</button>
+  <button type="button" id="btnCalc">🧮 Kalkulačka</button>
+</div>
+
+<div id="toolPanel" class="tool-panel"></div>
+
 
     <div class="summary-box">
       <div class="summary-title">Shrnutí zápisu</div>
