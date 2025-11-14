@@ -529,6 +529,148 @@ button.ghost:hover {
     margin: 0 auto;
 }
 
+/* ====== TOOL PANEL ====== */
+
+.tool-buttons {
+  display: flex;
+  gap: 0.8rem;
+  margin-bottom: 1rem;
+}
+
+.tool-buttons button {
+  padding: 6px 12px;
+  background: #2a2f38;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.tool-buttons button:hover {
+  background: #343b46;
+}
+
+.tool-panel {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  display: none;
+}
+
+.triangle-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.triangle-wrapper img {
+  max-width: 340px;
+  width: 100%;
+  height: auto;
+}
+
+/* ====== KALKULAČKA ====== */
+
+.calc-container {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 800px) {
+  .calc-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.calc-display {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.calc-input {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: rgba(0,0,0,0.25);
+  color: #fff;
+  font-family: "Consolas", "Fira Code", monospace;
+  font-size: 0.95rem;
+}
+
+.calc-result {
+  min-height: 1.6rem;
+  padding: 0.3rem 0.4rem;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.3);
+  font-family: "Consolas", "Fira Code", monospace;
+  font-size: 0.95rem;
+  color: #aee6ff;
+}
+
+.calc-copy {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: #2f3640;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.calc-copy:hover {
+  background: #3a4250;
+}
+
+.calc-keys {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.calc-keys button {
+  padding: 0.6rem 0;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: pointer;
+  font-size: 0.95rem;
+  background: #20242d;
+  color: #e0e6ff;
+}
+
+/* čísla */
+.calc-keys button[data-key] {
+  background: #262b35;
+}
+
+/* operátory */
+.calc-keys button[data-key="/"],
+.calc-keys button[data-key="*"],
+.calc-keys button[data-key="-"],
+.calc-keys button[data-key="+"],
+.calc-keys button[data-key="."],
+.calc-keys button[data-key=","] {
+  background: #3a2f4f;
+  color: #f5d7ff;
+}
+
+/* funkce */
+.calc-keys .calc-func {
+  background: #4a2b2b;
+  color: #ffd3d3;
+}
+
+/* = */
+.calc-keys .calc-eq {
+  grid-column: span 2;
+  background: #206a3b;
+  color: #e7ffef;
+}
+
 
 /* RESPONZIVNÍ */
 
