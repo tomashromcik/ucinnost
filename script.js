@@ -129,7 +129,7 @@ function renderStep1() {
     <p class="small muted">Zapiš dané veličiny ze zadání. Jednu z nich označ jako <b>hledanou</b>.</p>
 
     <div class="write-row">
-      <label class="title">P₀ (příkon)</label>
+      <label class="title">P₀ = </label>
       <input id="p0Val" class="input" type="text" inputmode="decimal" placeholder="111">
       <select id="p0Unit" class="input unit-select">
         <option value="">Vyber</option>
@@ -141,7 +141,7 @@ function renderStep1() {
     </div>
 
     <div class="write-row">
-      <label class="title">P (užitečný výkon)</label>
+      <label class="title">P = </label>
       <input id="pVal" class="input" type="text" inputmode="decimal" placeholder="111">
       <select id="pUnit" class="input unit-select">
         <option value="">Vyber</option>
@@ -153,7 +153,7 @@ function renderStep1() {
     </div>
 
     <div class="write-row">
-      <label class="title">η (účinnost)</label>
+      <label class="title">η = </label>
       <input id="etaPct" class="input" type="text" inputmode="decimal" placeholder="např. 75">
       <span class="eta-eq">% =</span>
       <input id="etaDec" class="input" type="text" inputmode="decimal" placeholder="např. 0,75">
