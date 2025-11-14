@@ -148,13 +148,29 @@ function renderStep1() {
   <label class="unknown-label"><input id="pChk" type="checkbox"> hledaná veličina</label>
 </div>
 
-<div class="write-row compact eta-row">
-  <label class="title">η =</label>
-  <input id="etaPct" class="input w-mid" type="text" placeholder="např. 75">
-  <span class="eta-symbol">% =</span>
-  <input id="etaDec" class="input w-mid" type="text" placeholder="např. 0,75">
-  <label class="unknown-label"><input id="etaChk" type="checkbox"> hledaná veličina</label>
-</div>
+    <div class="write-row eta-row">
+      <label class="title">η =</label>
+
+      <!-- tenhle box má stejnou šířku jako [hodnota] + [Vyber] u P a P₀ -->
+      <div class="eta-group">
+        <input id="etaPct"
+               class="input"
+               type="text"
+               inputmode="decimal"
+               placeholder="např. 75">
+        <span class="eta-symbol">% =</span>
+        <input id="etaDec"
+               class="input"
+               type="text"
+               inputmode="decimal"
+               placeholder="např. 0,75">
+      </div>
+
+      <label class="unknown-label">
+        <input id="etaChk" type="checkbox"> hledaná veličina
+      </label>
+    </div>
+
 
 <div id="writeMsg" class="feedback muted"></div>
 
