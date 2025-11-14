@@ -126,43 +126,55 @@ function renderStep1() {
 
   S(`
     <h2 class="subtitle">1. Zápis</h2>
-    <p class="small muted">Zapiš dané veličiny ze zadání. Jednu z nich označ jako <b>hledanou</b>.</p>
+<p class="small muted">Zapiš dané veličiny ze zadání. Jednu z nich označ jako <b>hledanou</b>.</p>
 
-    <div class="write-row">
-      <label class="title">P₀ = </label>
-      <input id="p0Val" class="input" type="text" inputmode="decimal" placeholder="111">
-      <select id="p0Unit" class="input unit-select">
+<div class="write-row">
+    <label class="title">P₀ =</label>
+
+    <input id="p0Val" class="input big-input" type="text" inputmode="decimal" placeholder="111">
+
+    <select id="p0Unit" class="input unit-select">
         <option value="">Vyber</option>
         <option>W</option><option>kW</option><option>MW</option>
-      </select>
-      <label class="unknown-label">
+    </select>
+
+    <label class="unknown-label">
         <input id="p0Chk" type="checkbox"> hledaná veličina
-      </label>
-    </div>
+    </label>
+</div>
 
-    <div class="write-row">
-      <label class="title">P = </label>
-      <input id="pVal" class="input" type="text" inputmode="decimal" placeholder="111">
-      <select id="pUnit" class="input unit-select">
+<div class="write-row">
+    <label class="title">P =</label>
+
+    <input id="pVal" class="input big-input" type="text" inputmode="decimal" placeholder="111">
+
+    <select id="pUnit" class="input unit-select">
         <option value="">Vyber</option>
         <option>W</option><option>kW</option><option>MW</option>
-      </select>
-      <label class="unknown-label">
+    </select>
+
+    <label class="unknown-label">
         <input id="pChk" type="checkbox"> hledaná veličina
-      </label>
-    </div>
+    </label>
+</div>
 
-    <div class="write-row">
-      <label class="title">η = </label>
-      <input id="etaPct" class="input" type="text" inputmode="decimal" placeholder="např. 75">
-      <span class="eta-eq">% =</span>
-      <input id="etaDec" class="input" type="text" inputmode="decimal" placeholder="např. 0,75">
-      <label class="unknown-label">
+<div class="write-row eta-row">
+    <label class="title">η =</label>
+
+    <!-- procenta -->
+    <input id="etaPct" class="input big-input" type="text" inputmode="decimal" placeholder="např. 75">
+    <span class="eta-eq">% =</span>
+
+    <!-- desetinné číslo -->
+    <input id="etaDec" class="input big-input" type="text" inputmode="decimal" placeholder="např. 0,75">
+
+    <label class="unknown-label">
         <input id="etaChk" type="checkbox"> hledaná veličina
-      </label>
-    </div>
+    </label>
+</div>
 
-    <div id="writeMsg" class="feedback muted"></div>
+<div id="writeMsg" class="feedback muted"></div>
+
   `);
 
   const p0Val  = document.getElementById("p0Val");
