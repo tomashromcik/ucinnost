@@ -425,6 +425,13 @@ function renderStep2() {
   S(`
     <h2 class="subtitle">2. Výpočet a odpověď</h2>
 
+    
+
+    <div class="summary-box">
+      <div class="summary-title">Shrnutí zápisu</div>
+      ${lines.map((t) => `<div class="summary-line">${t}</div>`).join("")}
+    </div>
+
     <!-- TLAČÍTKA NÁSTROJŮ -->
     <div class="tool-buttons">
       <button type="button" id="btnTriangle">🔺 Trojúhelník</button>
@@ -433,11 +440,6 @@ function renderStep2() {
 
     <!-- PANEL PRO NÁSTROJE -->
     <div id="toolPanel" class="tool-panel"></div>
-
-    <div class="summary-box">
-      <div class="summary-title">Shrnutí zápisu</div>
-      ${lines.map((t) => `<div class="summary-line">${t}</div>`).join("")}
-    </div>
 
     <div>
       <label>Vzorec</label>
