@@ -374,9 +374,18 @@ function renderStep2() {
       lines.push("η = ?");
     } else {
       lines.push(
-        `η = ${fmtComma(writeState.eta.pct)} % = ${fmtComma(writeState.eta.dec)}`
+        `η = ${fmtComma(writeState.eta.pct)} % = ${fmtComma(
+          writeState.eta.dec
+        )}`
       );
     }
+  } else {
+    // fallback kdyby writeState nebyl
+    lines.push(
+      `P₀ = ${fmtComma(problem.P0.v)} ${problem.P0.u}`,
+      `P = ${fmtComma(problem.P.v)} ${problem.P.u}`,
+      `η = ${problem.eta} %`
+    );
   }
 
   const formulaHint =
@@ -412,17 +421,17 @@ function renderStep2() {
     `;
   }
 
-  // --- HLAVNÍ HTML ---
+  // ---------- HLAVNÍ HTML ----------
   S(`
     <h2 class="subtitle">2. Výpočet a odpověď</h2>
 
-    <!-- NOVÁ TLAČÍTKA -->
+    <!-- TLAČÍTKA NÁSTROJŮ -->
     <div class="tool-buttons">
       <button type="button" id="btnTriangle">🔺 Trojúhelník</button>
       <button type="button" id="btnCalc">🧮 Kalkulačka</button>
     </div>
 
-    <!-- PANEL -->
+    <!-- PANEL PRO NÁSTROJE -->
     <div id="toolPanel" class="tool-panel"></div>
 
     <div class="summary-box">
@@ -455,7 +464,7 @@ function renderStep2() {
         <button type="button" data-ins=" : ">:</button>
         <button type="button" data-ins=" = ">=</button>
       </div>
-      <input id="subst" class="input" type="text" placeholder="např. η = P / P₀">
+      <input id="subst" class="input" type="text" placeholder="např. η = 64 / 120">
     </div>
 
     <div>${resultBlock}</div>
@@ -471,7 +480,7 @@ function renderStep2() {
     <div id="calcMsg" class="feedback muted"></div>
   `);
 
-  // --- SYMBOLOVÁ TLAČÍTKA ---
+  // ---------- SYMBOLOVÁ TLAČÍTKA ----------
   document.querySelectorAll(".inline-buttons").forEach((group) => {
     const targetId = group.getAttribute("data-target");
     group.querySelectorAll("button").forEach((btn) => {
@@ -482,21 +491,23 @@ function renderStep2() {
         }
         if (!target) return;
         const ins = btn.getAttribute("data-ins") || "";
-        const pos = target.selectionStart ?? target.value.length;
-        target.value =
-          target.value.slice(0, pos) + ins + target.value.slice(pos);
+        const start = target.selectionStart ?? target.value.length;
+        const end   = target.selectionEnd   ?? target.value.length;
+        target.value = target.value.slice(0, start) + ins + target.value.slice(end);
+        const pos = start + ins.length;
         target.focus();
-        target.selectionStart = target.selectionEnd = pos + ins.length;
+        target.selectionStart = target.selectionEnd = pos;
       });
     });
   });
 
-  // === TOOL PANEL LOGIKA ===
+  // ---------- PANEL S NÁSTROJI ----------
   const toolPanel = document.getElementById("toolPanel");
-  const btnTri = document.getElementById("btnTriangle");
-  const btnCal = document.getElementById("btnCalc");
+  const btnTri    = document.getElementById("btnTriangle");
+  const btnCal    = document.getElementById("btnCalc");
   let currentTool = null;
 
+  // Trojúhelník: P / (η * P₀) – použij PNG obrázek
   btnTri.addEventListener("click", () => {
     if (currentTool === "triangle") {
       toolPanel.style.display = "none";
@@ -507,15 +518,13 @@ function renderStep2() {
     currentTool = "triangle";
     toolPanel.style.display = "block";
     toolPanel.innerHTML = `
-      <svg viewBox="0 0 600 350">
-        <polygon points="300,20 20,330 580,330" fill="#1e2430" stroke="#fff" stroke-width="4"/>
-        <text x="300" y="60" fill="#fff" font-size="28" text-anchor="middle">P₀</text>
-        <text x="120" y="300" fill="#fff" font-size="28">P</text>
-        <text x="480" y="300" fill="#fff" font-size="28">η</text>
-      </svg>
+      <div class="triangle-wrapper">
+        <img src="ucinnost-vzorec.png" alt="Trojúhelník pro účinnost" />
+      </div>
     `;
   });
 
+  // Kalkulačka
   btnCal.addEventListener("click", () => {
     if (currentTool === "calc") {
       toolPanel.style.display = "none";
@@ -526,24 +535,135 @@ function renderStep2() {
     currentTool = "calc";
     toolPanel.style.display = "block";
     toolPanel.innerHTML = `
-      <div style="padding:1rem;text-align:center">
-        <b style="opacity:0.7">Kalkulačka bude brzy dostupná 🙂</b>
+      <div class="calc-container">
+        <div class="calc-display">
+          <input id="calcInput" class="calc-input" placeholder="Zadej výraz, např. 64/120 * 100" />
+          <div id="calcResult" class="calc-result">= …</div>
+          <button id="calcCopy" class="calc-copy">Kopírovat výsledek</button>
+        </div>
+        <div class="calc-keys">
+          <button data-key="7">7</button>
+          <button data-key="8">8</button>
+          <button data-key="9">9</button>
+          <button data-key="/">÷</button>
+
+          <button data-key="4">4</button>
+          <button data-key="5">5</button>
+          <button data-key="6">6</button>
+          <button data-key="*">×</button>
+
+          <button data-key="1">1</button>
+          <button data-key="2">2</button>
+          <button data-key="3">3</button>
+          <button data-key="-">−</button>
+
+          <button data-key="0">0</button>
+          <button data-key=".">.</button>
+          <button data-key=",">,</button>
+          <button data-key="+">+</button>
+
+          <button data-action="clear" class="calc-func">C</button>
+          <button data-action="back" class="calc-func">⌫</button>
+          <button data-action="eval" class="calc-eq">=</button>
+        </div>
       </div>
     `;
+
+    // Drátování kalkulačky
+    const input  = document.getElementById("calcInput");
+    const result = document.getElementById("calcResult");
+    const copyBtn= document.getElementById("calcCopy");
+
+    // přidání znaku do inputu
+    function insertText(txt) {
+      const start = input.selectionStart ?? input.value.length;
+      const end   = input.selectionEnd   ?? input.value.length;
+      input.value = input.value.slice(0, start) + txt + input.value.slice(end);
+      const pos = start + txt.length;
+      input.focus();
+      input.selectionStart = input.selectionEnd = pos;
+      updatePreview();
+    }
+
+    // bezpečné vyhodnocení výrazu
+    function safeEval(expr) {
+      if (!expr.trim()) return NaN;
+      // jen čísla, +-*/()., a mezery
+      if (!/^[0-9+\-*/().,\s]+$/.test(expr)) return NaN;
+      const norm = expr.replace(/,/g, ".");
+      try {
+        // jednoduchá kalkulačka – pro žáky OK
+        const fn = new Function("return (" + norm + ");");
+        const v = fn();
+        return typeof v === "number" && isFinite(v) ? v : NaN;
+      } catch {
+        return NaN;
+      }
+    }
+
+    function updatePreview() {
+      const v = safeEval(input.value);
+      if (isNaN(v)) {
+        result.textContent = "= …";
+      } else {
+        result.textContent = "= " + fmtComma(v, 4);
+      }
+    }
+
+    document.querySelectorAll(".calc-keys button").forEach((btn) => {
+      const key = btn.getAttribute("data-key");
+      const action = btn.getAttribute("data-action");
+      if (key) {
+        btn.addEventListener("click", () => insertText(key));
+      } else if (action === "clear") {
+        btn.addEventListener("click", () => {
+          input.value = "";
+          updatePreview();
+        });
+      } else if (action === "back") {
+        btn.addEventListener("click", () => {
+          input.value = input.value.slice(0, -1);
+          updatePreview();
+        });
+      } else if (action === "eval") {
+        btn.addEventListener("click", updatePreview);
+      }
+    });
+
+    input.addEventListener("input", updatePreview);
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        updatePreview();
+      }
+    });
+
+    copyBtn.addEventListener("click", () => {
+      const v = safeEval(input.value);
+      if (!isNaN(v)) {
+        navigator.clipboard?.writeText(String(v));
+        copyBtn.textContent = "Zkopírováno ✓";
+        setTimeout(() => (copyBtn.textContent = "Kopírovat výsledek"), 1200);
+      }
+    });
+
+    // focus na input, ať může psát klávesnicí
+    input.focus();
+    updatePreview();
   });
 
-  // validace výsledku
+  // ---------- VALIDACE VÝSLEDKU PRO TLAČÍTKO „DALŠÍ“ ----------
   function validateCalc() {
     let ok = true;
-    const resVal = document.getElementById("resVal");
+    const resVal  = document.getElementById("resVal");
     const resUnit = document.getElementById("resUnit");
 
     if (problem.type === "eta") {
-      ok = isFinite(toNum(resVal.value));
+      ok = isFinite(toNum(resVal?.value || ""));
     } else {
       ok =
-        isFinite(toNum(resVal.value)) &&
-        ["W", "kW", "MW"].includes(resUnit.value);
+        isFinite(toNum(resVal?.value || "")) &&
+        ["W", "kW", "MW"].includes(resUnit?.value || "");
     }
 
     gates.calcOk = ok;
@@ -557,6 +677,7 @@ function renderStep2() {
 
   validateCalc();
 }
+
 
 
 // ---------- Render hlavní ----------
