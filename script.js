@@ -148,7 +148,7 @@ function renderStep1() {
   <label class="unknown-label"><input id="pChk" type="checkbox"> hledaná veličina</label>
 </div>
 
-<div class="write-row compact">
+<div class="write-row compact eta-row">
   <label class="title">η =</label>
   <input id="etaPct" class="input w-mid" type="text" placeholder="např. 75">
   <span class="eta-symbol">% =</span>
