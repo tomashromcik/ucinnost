@@ -747,6 +747,41 @@ button.ghost:hover {
     width: 170px;
 }
 
+/* ---- Kompaktní řádky pro zápis ---- */
+
+.write-row.compact {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.write-row.compact .title {
+  min-width: 40px;        /* aby "P0 =" zarovnalo */
+  font-weight: 600;
+  text-align: right;
+  margin-right: 4px;
+}
+
+.input.w-long {
+  width: 220px;
+}
+
+.input.w-mid {
+  width: 140px;
+}
+
+/* symbol mezi inputy u η */
+.eta-symbol {
+  color: #fff;
+  opacity: 0.7;
+  margin-right: 4px;
+}
+
+.unknown-label {
+  margin-left: auto;      /* checkbox vždy úplně vpravo */
+  white-space: nowrap;
+}
 
 
 /* RESPONZIVNÍ */
