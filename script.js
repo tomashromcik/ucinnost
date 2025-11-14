@@ -185,7 +185,7 @@ function renderStep1() {
       valEl.value = "";
       valEl.disabled = true;
       valEl.placeholder = "?";
-      unitEl.disabled = false; // žák vybírá jednotku i pro hledanou (abychom věděli jednotky výsledku)
+      unitEl.disabled = false; // žák vybírá jednotku i pro hledanou
     } else {
       valEl.disabled = false;
       valEl.placeholder = "111";
@@ -391,12 +391,9 @@ function renderStep2() {
     );
   }
 
-  const formulaHint =
-    problem.type === "eta"
-      ? 'η = P / P₀ (povoleno i „η = P : P₀“)'
-      : problem.type === "P"
-      ? 'P = η · P₀ (η napiš jako 0,75) nebo „P = (η : 100) · P₀“'
-      : 'P₀ = P / (η : 100) nebo „P₀ = P : (η : 100)“';
+  // nové statické placeholdery podle tvého zadání
+  const formulaPlaceholder = 'např. "η" = P / P₀';
+  const substPlaceholder   = 'např. "η" = 64 / 120';
 
   // šablona odpovědi
   const template =
@@ -456,7 +453,7 @@ function renderStep2() {
         <button type="button" data-ins=" : ">:</button>
         <button type="button" data-ins=" = ">=</button>
       </div>
-      <input id="formula" class="input" type="text" placeholder="${formulaHint}">
+      <input id="formula" class="input" type="text" placeholder="${formulaPlaceholder}">
     </div>
 
     <!-- Dosaď do vzorce -->
@@ -471,7 +468,7 @@ function renderStep2() {
         <button type="button" data-ins=" : ">:</button>
         <button type="button" data-ins=" = ">=</button>
       </div>
-      <input id="subst" class="input" type="text" placeholder="např. η = P / P₀">
+      <input id="subst" class="input" type="text" placeholder="${substPlaceholder}">
     </div>
 
     <!-- Výsledek -->
@@ -572,7 +569,6 @@ function toggleNext() {
   if (!STRICT_FLOW || !E.btnNext) return;
   let allow = true;
   if (step === 1) allow = gates.writeOk;
-  // krok 2 už je poslední, Next může být vždy, nebo můžeme nechat allow = true
   E.btnNext.disabled = !allow;
 }
 
