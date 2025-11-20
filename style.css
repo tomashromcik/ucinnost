@@ -532,6 +532,21 @@ button.ghost:hover {
   text-align: center;
 }
 
+/* --- Zadání nahoře, Postup pod ním – jeden sloupec pro všechna rozlišení --- */
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;              /* mezera mezi bloky, případně uprav */
+}
+
+/* aby se karty roztáhly na šířku */
+.layout > .aside,
+.layout > .flow {
+  width: 100%;
+}
+
+
 /* ====== RESPONSIVITA ====== */
 
 @media (max-width: 880px) {
@@ -543,3 +558,5 @@ button.ghost:hover {
     grid-template-columns: 1fr;
   }
 }
+
+
