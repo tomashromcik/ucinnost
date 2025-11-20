@@ -376,7 +376,7 @@ function renderStep2() {
     `;
   }
 
-  S(`
+      S(`
     <h2 class="subtitle">2. Výpočet a odpověď</h2>
 
     <div class="summary-box">
@@ -384,52 +384,33 @@ function renderStep2() {
       ${lines.map((t) => `<div class="summary-line">${t}</div>`).join("")}
     </div>
 
-    <div class="tool-buttons">
-      <button type="button" id="btnTriangle">🔺 Trojúhelník</button>
-      <button type="button" id="btnCalc">🧮 Kalkulačka</button>
-    </div>
-    <div id="toolPanel" class="tool-panel"></div>
-
+    <!-- Vzorec -->
     <div>
       <label>Vzorec</label>
       <div class="inline-buttons" data-target="formula">
-        <button type="button" data-ins="η">η</button>
-        <button type="button" data-ins="P">P</button>
-        <button type="button" data-ins="P₀">P₀</button>
-        <button type="button" data-ins=" · ">·</button>
-        <button type="button" data-ins=" / ">/</button>
-        <button type="button" data-ins=" : ">:</button>
-        <button type="button" data-ins=" = ">=</button>
+        ...
       </div>
       <input id="formula" class="input" type="text" placeholder="${formulaHint}">
     </div>
 
+    <!-- Dosaď do vzorce -->
     <div>
       <label>Dosaď do vzorce</label>
       <div class="inline-buttons" data-target="subst">
-        <button type="button" data-ins="η">η</button>
-        <button type="button" data-ins="P">P</button>
-        <button type="button" data-ins="P₀">P₀</button>
-        <button type="button" data-ins=" · ">·</button>
-        <button type="button" data-ins=" / ">/</button>
-        <button type="button" data-ins=" : ">:</button>
-        <button type="button" data-ins=" = ">=</button>
+        ...
       </div>
-      <input id="subst" class="input" type="text" placeholder="např. η = 64 / 120">
+      <input id="subst" class="input" type="text" placeholder="např. η = P / P₀">
     </div>
 
-    <div>${resultBlock}</div>
-
+    <!-- Výsledek -->
     <div>
-      <label>Šablona odpovědi</label>
-      <div class="summary-box">
-        ${template.replace("__", '<b id="answerPlaceholder">[doplň výsledek]</b>')}
-      </div>
-      <div id="autoAnswer" class="feedback muted"></div>
+      ${resultBlock}
     </div>
 
-    <div id="calcMsg" class="feedback muted"></div>
+    <!-- Odpověď -->
+    ...
   `);
+
 
   // symbolová tlačítka
   document.querySelectorAll(".inline-buttons").forEach((group) => {
