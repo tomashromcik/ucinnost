@@ -361,13 +361,24 @@ function renderStep2() {
   if (problem.type === "eta") {
     resultBlock = `
       <label>Výsledek — η (%)</label>
-      <input id="resVal" class="input" type="text" inputmode="decimal" placeholder="např. 75">
+      <input id="resVal" class="input input-wide" type="text" inputmode="decimal" placeholder="např. 75">
+    `;
+  } else if (problem.type === "P") {
+    resultBlock = `
+      <label>Výsledek — P</label>
+      <div class="row gap">
+        <input id="resVal" class="input input-wide" type="text" inputmode="decimal" placeholder="hodnota">
+        <select id="resUnit" class="input unit-select">
+          <option value="">Vyber</option>
+          <option>W</option><option>kW</option><option>MW</option>
+        </select>
+      </div>
     `;
   } else {
     resultBlock = `
-      <label>Výsledek — ${problem.type === "P" ? "P" : "P₀"}</label>
+      <label>Výsledek — P₀</label>
       <div class="row gap">
-        <input id="resVal" class="input" type="text" inputmode="decimal" placeholder="hodnota">
+        <input id="resVal" class="input input-wide" type="text" inputmode="decimal" placeholder="hodnota">
         <select id="resUnit" class="input unit-select">
           <option value="">Vyber</option>
           <option>W</option><option>kW</option><option>MW</option>
@@ -375,6 +386,7 @@ function renderStep2() {
       </div>
     `;
   }
+
 
         S(`
     <h2 class="subtitle">2. Výpočet a odpověď</h2>
