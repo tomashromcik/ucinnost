@@ -574,6 +574,30 @@ h1, h2, .subtitle {
   font-size: 0.95rem;
 }
 
+/* === Výpočet: široká textová pole === */
+
+/* Jeden výpočetní blok (Vzorec / Dosaď / Výsledek) */
+.calc-group {
+  margin-top: 1rem;
+}
+
+/* Label nad vstupem */
+.calc-group label {
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+/* Široké vstupy přes celou šířku boxu */
+.input-wide {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Tlačítka se symboly trochu odsadit od vstupu */
+.inline-buttons {
+  margin-bottom: 0.35rem;
+}
+
 
 /* ====== RESPONSIVITA ====== */
 
