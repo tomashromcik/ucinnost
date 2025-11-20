@@ -547,6 +547,34 @@ button.ghost:hover {
 }
 
 
+/* === Větší základní písmo === */
+
+html {
+  font-size: 17px;        /* můžeš klidně zkusit 18px, kdyžtak doladíme */
+}
+
+body {
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Hlavní nadpisy a podnadpisy trochu zvýraznit */
+.topbar .brand {
+  font-size: 1.4rem;
+}
+
+h1, h2, .subtitle {
+  font-size: 1.25rem;
+}
+
+/* Menší texty (poznámky, hinty) ať nejsou úplně pidí */
+.small,
+.muted,
+.feedback {
+  font-size: 0.95rem;
+}
+
+
 /* ====== RESPONSIVITA ====== */
 
 @media (max-width: 880px) {
