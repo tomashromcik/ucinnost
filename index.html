@@ -2,92 +2,74 @@
 <html lang="cs">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Účinnost — generátor slovních úloh</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Účinnost — generátor slovních úloh (P₀, P)</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="icon" href="favicon.ico"/>
 </head>
 <body>
   <main class="container">
+    <!-- Hlavní horní lišta -->
     <header class="topbar">
       <div class="brand">⚙️ Účinnost — generátor úloh</div>
     </header>
 
-    <!-- ZADÁNÍ -->
-    <section class="card zadani-card">
-      <h2>Zadání</h2>
-      <div id="zadaniText" class="zadani"></div>
-
-      <div class="triangle-box" aria-hidden="true">
-        <!-- vzorec účinnosti jako SVG -->
-        <svg viewBox="0 0 200 180" class="triangle-svg">
-          <defs>
-            <style>
-              .tri-line {
-                stroke:#e5e7eb;
-                stroke-width:4;
-                fill:none;
-                stroke-linejoin:round;
-              }
-              .tri-text {
-                fill:#e5e7eb;
-                font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-                font-size:26px;
-              }
-            </style>
-          </defs>
-          <!-- trojúhelník -->
-          <polygon class="tri-line" points="100 10 15 165 185 165" />
-          <!-- dělící čára -->
-          <line class="tri-line" x1="35" y1="115" x2="165" y2="115" />
-          <!-- P nahoře -->
-          <text class="tri-text" x="100" y="78" text-anchor="middle">P</text>
-          <!-- η · P0 dole -->
-          <text class="tri-text" x="80"  y="145" text-anchor="middle">η · P</text>
-          <text class="tri-text" x="108" y="152" text-anchor="middle" font-size="18">0</text>
-        </svg>
-      </div>
-    </section>
-     
-
-    <!-- POSTUP -->
-    <section class="card postup-card">
-      <header class="steps-header">
-        <span class="steps-label">Postup</span>
-        <div class="steps" id="stepsNav">
-          <div class="step active" data-step="1"><span>1</span> Zápis</div>
-          <div class="step" data-step="2"><span>2</span> Výpočet a odpověď</div>
+    <section class="layout">
+      <!-- Levý panel: ZADÁNÍ + obtížnost + nová úloha -->
+      <aside class="card aside">
+        <div class="aside-header">
+          <h2>Zadání</h2>
+          <div class="aside-controls">
+            <label class="difficulty-label">
+              Obtížnost
+              <select id="difficulty" class="input difficulty-select">
+                <option value="lehka">Lehká</option>
+                <option value="normalni">Normální</option>
+              </select>
+            </label>
+            <button id="btnNew" class="primary small">Nová úloha</button>
+          </div>
         </div>
-      </header>
 
-      <div id="content" class="content"></div>
-
-      <div class="row between actions">
-        <button id="btnBack" class="ghost">← Zpět</button>
-        <div class="row gap">
-          <button id="btnCheck" class="primary" style="display:none">✔ Zkontrolovat</button>
-          <button id="btnNext">Pokračovat →</button>
+        <div class="zadani-box">
+          <div id="zadaniText" class="zadani"></div>
         </div>
-      </div>
+      </aside>
+
+      <!-- Pravý panel: POSTUP -->
+      <section class="card flow">
+        <div class="steps-header">
+          <div class="steps-title">Postup</div>
+          <div class="steps">
+            <div class="step active" data-step="1">
+              <span>1</span> Zápis
+            </div>
+            <div class="step" data-step="2">
+              <span>2</span> Výpočet a odpověď
+            </div>
+          </div>
+        </div>
+
+        <!-- Dynamický obsah kroků -->
+        <div id="content" class="content-area"></div>
+
+        <!-- Ovládací tlačítka dole -->
+        <div class="row between actions">
+          <button id="btnBack" class="ghost">← Zpět</button>
+          <div class="row gap">
+            <button id="btnCheck" class="primary">✔ Zkontrolovat</button>
+            <button id="btnNext">Pokračovat →</button>
+          </div>
+        </div>
+      </section>
     </section>
 
-    <!-- OVLÁDÁNÍ + OBTÍŽNOST -->
-    <section class="card intro">
-      <div class="row gap">
-        <button id="btnNew" class="primary">➕ Nová úloha</button>
-        <button id="btnReset" class="ghost">↺ Reset statistik</button>
-        <label class="diff-label">
-          Obtížnost
-          <select id="difficulty" class="input">
-            <option value="lehka">Lehká</option>
-            <option value="normalni">Normální</option>
-          </select>
-        </label>
+    <!-- Statistika -->
+    <section class="card results">
+      <div class="results-header">
+        <h2>Výsledky a statistika</h2>
+        <button id="btnReset" class="ghost small">Reset statistik</button>
       </div>
-    </section>
-
-    <!-- STATISTIKA -->
-    <section class="card results-card">
-      <h2>Výsledky a statistika</h2>
       <div class="grid3">
         <div class="stat">
           <span class="k">Správně</span>
@@ -109,6 +91,7 @@
     </footer>
   </main>
 
+  <!-- Logika aplikace -->
   <script src="script.js" defer></script>
 </body>
 </html>
