@@ -376,7 +376,7 @@ function renderStep2() {
     `;
   }
 
-      S(`
+        S(`
     <h2 class="subtitle">2. Výpočet a odpověď</h2>
 
     <div class="summary-box">
@@ -385,31 +385,52 @@ function renderStep2() {
     </div>
 
     <!-- Vzorec -->
-    <div>
+    <div class="calc-group">
       <label>Vzorec</label>
       <div class="inline-buttons" data-target="formula">
-        ...
+        <button type="button" data-ins="η">η</button>
+        <button type="button" data-ins="P">P</button>
+        <button type="button" data-ins="P₀">P₀</button>
+        <button type="button" data-ins=" · ">·</button>
+        <button type="button" data-ins=" / ">/</button>
+        <button type="button" data-ins=" : ">:</button>
+        <button type="button" data-ins=" = ">=</button>
       </div>
-      <input id="formula" class="input" type="text" placeholder="${formulaHint}">
+      <input id="formula" class="input input-wide" type="text" placeholder="${formulaHint}">
     </div>
 
     <!-- Dosaď do vzorce -->
-    <div>
+    <div class="calc-group">
       <label>Dosaď do vzorce</label>
       <div class="inline-buttons" data-target="subst">
-        ...
+        <button type="button" data-ins="η">η</button>
+        <button type="button" data-ins="P">P</button>
+        <button type="button" data-ins="P₀">P₀</button>
+        <button type="button" data-ins=" · ">·</button>
+        <button type="button" data-ins=" / ">/</button>
+        <button type="button" data-ins=" : ">:</button>
+        <button type="button" data-ins=" = ">=</button>
       </div>
-      <input id="subst" class="input" type="text" placeholder="např. η = P / P₀">
+      <input id="subst" class="input input-wide" type="text" placeholder="např. η = P / P₀">
     </div>
 
     <!-- Výsledek -->
-    <div>
+    <div class="calc-group">
       ${resultBlock}
     </div>
 
     <!-- Odpověď -->
-    ...
+    <div class="calc-group">
+      <label>Šablona odpovědi</label>
+      <div class="summary-box">
+        ${template.replace("__", '<b id="answerPlaceholder">[doplň výsledek]</b>')}
+      </div>
+      <div id="autoAnswer" class="feedback muted"></div>
+    </div>
+
+    <div id="calcMsg" class="feedback muted"></div>
   `);
+
 
 
   // symbolová tlačítka
