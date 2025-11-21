@@ -545,17 +545,36 @@ function renderStep2() {
       </div>
     </div>
 
-    <!-- Vzorec -->
+       <!-- Vzorec -->
     <div style="margin-top:0.4rem;">
       <label>Vzorec</label>
+      <div class="inline-buttons" data-target="formula">
+        <button type="button" data-ins="η">η</button>
+        <button type="button" data-ins="P">P</button>
+        <button type="button" data-ins="P₀">P₀</button>
+        <button type="button" data-ins=" · ">·</button>
+        <button type="button" data-ins=" / ">/</button>
+        <button type="button" data-ins=" : ">:</button>
+        <button type="button" data-ins=" = ">=</button>
+      </div>
       <input id="formula" class="input full-input" type="text" placeholder="${formulaHint}">
     </div>
 
     <!-- Dosaď do vzorce -->
     <div style="margin-top:0.8rem;">
       <label>Dosaď do vzorce</label>
+      <div class="inline-buttons" data-target="subst">
+        <button type="button" data-ins="η">η</button>
+        <button type="button" data-ins="P">P</button>
+        <button type="button" data-ins="P₀">P₀</button>
+        <button type="button" data-ins=" · ">·</button>
+        <button type="button" data-ins=" / ">/</button>
+        <button type="button" data-ins=" : ">:</button>
+        <button type="button" data-ins=" = ">=</button>
+      </div>
       <input id="subst" class="input full-input" type="text" placeholder="např. η = ${fmtComma(problem.PW)} / ${fmtComma(problem.P0W)}">
     </div>
+
 
     <!-- Výsledek -->
     <div style="margin-top:0.8rem;">
@@ -669,6 +688,35 @@ function renderStep2() {
     const val = btn.getAttribute("data-val");
     btn.addEventListener("click", () => handleCmd(cmd, val));
   });
+
+    // tlačítka pro vkládání symbolů do vzorce / dosazení
+  E.content.querySelectorAll(".inline-buttons").forEach((group) => {
+    const targetId = group.getAttribute("data-target");
+    group.querySelectorAll("button").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        let target = document.activeElement;
+        // pokud kurzor není zrovna v cílovém poli, vezmeme ho podle ID
+        if (!(target && target.id === targetId)) {
+          target = document.getElementById(targetId);
+        }
+        if (!target) return;
+
+        const ins = btn.getAttribute("data-ins") || "";
+        const start = target.selectionStart ?? target.value.length;
+        const end   = target.selectionEnd   ?? target.value.length;
+
+        target.value =
+          target.value.slice(0, start) +
+          ins +
+          target.value.slice(end);
+
+        const pos = start + ins.length;
+        target.focus();
+        target.selectionStart = target.selectionEnd = pos;
+      });
+    });
+  });
+
 
   // základní kontrola pro povolení Next
   function validateCalc() {
