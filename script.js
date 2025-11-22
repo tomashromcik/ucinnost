@@ -459,6 +459,14 @@ function renderStep2() {
       ? 'P = η · P₀ (η napiš jako 0,75) nebo „P = (η : 100) · P₀“'
       : 'P₀ = P / (η : 100) nebo „P₀ = P : (η : 100)“';
 
+   // 🔧 DOPLNIT TENTO BLOK:
+  const template =
+    problem.type === "eta"
+      ? `Zařízení má účinnost __ %.`
+      : problem.type === "P"
+      ? `${problem.device.name} má užitečný výkon __.`
+      : `${problem.device.name} má příkon __.`;
+
   // text odpovědi podle zařízení + typu
   const devName = problem.device.name;
   let odpovedPrefix = "";
