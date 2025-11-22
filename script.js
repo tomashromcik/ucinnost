@@ -110,7 +110,9 @@ function makeProblem() {
   );
 
   // 4) Výkon P (vždy zakládáme na W)
-  const PW = Math.round(P0W * (eta / 100));
+   // výkon zaokrouhlený na celé W a nikdy ne 0
+  const PW = Math.max(1, Math.round(P0W * (eta / 100)));
+
 
   // P převedeme do "hezkých" jednotek uP
   let PNice;
@@ -184,7 +186,11 @@ function renderStep1() {
 
   S(`
     <h2 class="subtitle">1. Zápis</h2>
-    <p class="small muted">Zapiš dané veličiny ze zadání. Jednu z nich označ jako <b>hledanou</b>.</p>
+<p class="small muted">
+  Zapiš dané veličiny ze zadání. Jednu z nich označ jako <b>hledanou</b>.
+  U lehké obtížnosti zapisuj P₀ a P ve stejných jednotkách (W, kW nebo MW).
+</p>
+
 
     <div class="write-row">
       <div class="write-label"><span>P₀</span> =</div>
@@ -583,18 +589,18 @@ function renderStep2() {
       ${resultUnitHtml}
     </div>
 
-    <!-- Odpověď -->
-    <div style="margin-top:1rem;">
-      <h3 class="subtitle" style="margin-bottom:0.2rem;">Odpověď</h3>
-      <div class="summary-box">
-        <div class="answer-sentence">
-          ${odpovedPrefix}
-          <input id="ansVal" class="input" type="text" inputmode="decimal" placeholder="výsledek">
-          ${problem.type === "eta" ? "%" : ""}
-        </div>
-      </div>
-      <div id="autoAnswer" class="feedback muted"></div>
-    </div>
+   <!-- Odpověď -->
+<div>
+  <label>Odpověď</label>
+  <p class="answer-sentence">
+    ${template.replace(
+      "__",
+      '<input id="answerInput" type="text" class="input-inline" inputmode="decimal" placeholder="výsledek">'
+    )}
+  </p>
+  <div id="autoAnswer" class="feedback muted"></div>
+</div>
+
 
     <div id="calcMsg" class="feedback muted"></div>
   `);
@@ -788,6 +794,7 @@ function setStats() {
 
 function doCheck() {
   if (step !== 2 || !problem) return;
+
   const box = document.getElementById("calcMsg");
   const ansBox = document.getElementById("autoAnswer");
   if (box) {
@@ -799,90 +806,159 @@ function doCheck() {
     ansBox.className = "feedback";
   }
 
-  const formula = (document.getElementById("formula")?.value || "")
-    .replace(/\s+/g, "")
-    .replace(/eta/gi, "η");
-  const subst = (document.getElementById("subst")?.value || "").trim();
+  const formulaRaw = (document.getElementById("formula")?.value || "").trim();
+  const substRaw =
+    (document.getElementById("subst")?.value || "").trim();
+  const formula = formulaRaw.replace(/\s+/g, "").replace(/eta/gi, "η");
+  const subst = substRaw;
 
+  // ——— 1) kontrola vzorce ———
   let goodFormula = false;
   if (problem.type === "eta")
     goodFormula = formula === "η=P/P₀" || formula === "η=P:P₀";
   if (problem.type === "P")
-    goodFormula = ["P=η·P₀", "P=(η:100)·P₀", "P=η*P₀"].includes(formula);
+    goodFormula =
+      formula === "P=η·P₀" ||
+      formula === "P=(η:100)·P₀" ||
+      formula === "P=η*P₀";
   if (problem.type === "P0")
     goodFormula =
       formula === "P₀=P/η" ||
-      ["P₀=P/(η:100)", "P₀=P:(η:100)"].includes(formula);
+      formula === "P₀=P/(η:100)" ||
+      formula === "P₀=P:(η:100)";
 
-  const resVal = document.getElementById("resVal");
-  const resUnit = document.getElementById("resUnit");
-  const ansVal = document.getElementById("ansVal");
-
-  let ok = false;
-  let acc = 0;
-  const tolRel = 0.005;
-
-  let msg = "";
-
-  if (!subst) {
-    msg = "Nezapomeň dosadit do vzorce.";
+  // ——— 2) kontrola dosazení ———
+  let goodSubst = false;
+  if (substRaw) {
+    const s = substRaw.replace(/\s+/g, "");
+    if (problem.type === "eta") {
+      // chceme, aby tam byla η, P i P₀
+      goodSubst = /η/.test(s) && /P/.test(s) && /P₀/.test(s);
+    } else if (problem.type === "P") {
+      // P = něco z η a P₀
+      goodSubst = /η/.test(s) && /P₀/.test(s);
+    } else {
+      // P₀ = něco z P a η
+      goodSubst = /P/.test(s) && /η/.test(s);
+    }
+  } else {
+    goodSubst = false;
   }
+
+  // ——— 3) číselný výsledek ———
+  const resValEl = document.getElementById("resVal");
+  const resUnitEl = document.getElementById("resUnit");
+
+  let numericOk = false;
+  let acc = 0;
+  let msg = "";
+  const tolRel = 0.005; // 0,5 %
 
   if (problem.type === "eta") {
-    const v = toNum(resVal?.value);
+    const v = toNum(resValEl?.value);
     if (isFinite(v)) {
       acc = 100 - Math.min(100, Math.abs(v - problem.eta));
-      ok = Math.abs(v - problem.eta) <= Math.max(1e-6, problem.eta * tolRel);
+      numericOk =
+        Math.abs(v - problem.eta) <=
+        Math.max(1e-6, problem.eta * tolRel);
     }
-    msg =
-      goodFormula && ok
-        ? `Vzorec i výsledek jsou v pořádku. η ≈ ${fmtComma(
-            problem.eta
-          )} %.`
-        : !goodFormula
-        ? "Vzorec není zapsán správně."
-        : `Výsledek nesouhlasí. Očekává se přibližně ${fmtComma(
-            problem.eta
-          )} %.`;
+    if (!goodFormula) {
+      msg = "Vzorec není zapsán správně.";
+    } else if (!goodSubst) {
+      msg = "Dosazení do vzorce není zapsáno správně.";
+    } else if (!numericOk) {
+      msg = `Výsledek nesouhlasí. Očekává se přibližně ${fmtComma(
+        problem.eta
+      )} %.`;
+    } else {
+      msg = `Vzorec i výsledek jsou v pořádku. η ≈ ${fmtComma(
+        problem.eta
+      )} %.`;
+    }
   } else if (problem.type === "P") {
-    const v = toNum(resVal?.value);
-    const u = resUnit?.value || "W";
+    const v = toNum(resValEl?.value);
+    const u = resUnitEl?.value || "W";
     const got = v * (F[u] || 1);
     const want = problem.PW;
+
     if (isFinite(got)) {
-      acc = 100 - Math.min(100, (Math.abs(got - want) / want) * 100);
-      ok = Math.abs(got - want) <= Math.max(1e-6, want * tolRel);
+      acc =
+        100 - Math.min(100, (Math.abs(got - want) / want) * 100);
+      numericOk =
+        Math.abs(got - want) <= Math.max(1e-6, want * tolRel);
     }
-    msg =
-      goodFormula && ok
-        ? `Vzorec i výsledek jsou v pořádku. P ≈ ${fmtComma(
-            want / F[u]
-          )} ${u}.`
-        : !goodFormula
-        ? "Vzorec není zapsán správně."
-        : `Výsledek nesouhlasí. Očekává se přibližně ${fmtComma(
-            want / F[u]
-          )} ${u}.`;
+
+    if (!goodFormula) {
+      msg = "Vzorec není zapsán správně.";
+    } else if (!goodSubst) {
+      msg = "Dosazení do vzorce není zapsáno správně.";
+    } else if (!numericOk) {
+      msg = `Výsledek nesouhlasí. Očekává se přibližně ${fmtW(
+        want
+      )}.`;
+    } else {
+      msg = `Vzorec i výsledek jsou v pořádku. P ≈ ${fmtW(want)}.`;
+    }
   } else {
-    const v = toNum(resVal?.value);
-    const u = resUnit?.value || "W";
+    // type === "P0"
+    const v = toNum(resValEl?.value);
+    const u = resUnitEl?.value || "W";
     const got = v * (F[u] || 1);
     const want = problem.P0W;
+
     if (isFinite(got)) {
-      acc = 100 - Math.min(100, (Math.abs(got - want) / want) * 100);
-      ok = Math.abs(got - want) <= Math.max(1e-6, want * tolRel);
+      acc =
+        100 - Math.min(100, (Math.abs(got - want) / want) * 100);
+      numericOk =
+        Math.abs(got - want) <= Math.max(1e-6, want * tolRel);
     }
-    msg =
-      goodFormula && ok
-        ? `Vzorec i výsledek jsou v pořádku. P₀ ≈ ${fmtComma(
-            want / F[u]
-          )} ${u}.`
-        : !goodFormula
-        ? "Vzorec není zapsán správně."
-        : `Výsledek nesouhlasí. Očekává se přibližně ${fmtComma(
-            want / F[u]
-          )} ${u}.`;
+
+    if (!goodFormula) {
+      msg = "Vzorec není zapsán správně.";
+    } else if (!goodSubst) {
+      msg = "Dosazení do vzorce není zapsáno správně.";
+    } else if (!numericOk) {
+      msg = `Výsledek nesouhlasí. Očekává se přibližně ${fmtW(
+        want
+      )}.`;
+    } else {
+      msg = `Vzorec i výsledek jsou v pořádku. P₀ ≈ ${fmtW(want)}.`;
+    }
   }
+
+  // ——— 4) slovní odpověď – musí být vyplněná ———
+  const ansInput = document.getElementById("answerInput");
+  const ansVal = toNum(ansInput?.value);
+  const hasAns = isFinite(ansVal);
+
+  if (ansBox) {
+    if (!hasAns) {
+      ansBox.textContent =
+        "Doplň číselný výsledek také do odpovědi.";
+      ansBox.classList.add("error");
+    } else {
+      let answer = "";
+      if (problem.type === "eta") {
+        answer = `Účinnost ${
+          problem.device.name.toLowerCase()
+        } je přibližně ${fmtComma(problem.eta)} %.`;
+      } else if (problem.type === "P") {
+        answer = `Užitečný výkon zařízení je přibližně ${fmtW(
+          problem.PW
+        )}.`;
+      } else {
+        answer = `Celkový příkon zařízení je přibližně ${fmtW(
+          problem.P0W
+        )}.`;
+      }
+      ansBox.textContent = answer;
+      ansBox.classList.add("success");
+    }
+  }
+
+  // ——— 5) vyhodnocení + statistiky ———
+  const ok =
+    goodFormula && goodSubst && numericOk && hasAns;
 
   if (box) {
     box.textContent = msg;
@@ -897,31 +973,8 @@ function doCheck() {
     stats.err++;
   }
   setStats();
-
-  // odpověď – slovně i kontrola vyplnění
-  if (ansBox) {
-    const ansNum = toNum(ansVal?.value);
-    const hasAns = ansVal && ansVal.value.trim() !== "" && isFinite(ansNum);
-    let answer = "";
-    if (problem.type === "eta") {
-      answer = `${problem.device.name} má účinnost přibližně ${fmtComma(
-        problem.eta
-      )} %.`;
-    } else if (problem.type === "P") {
-      answer = `${problem.device.name} má užitečný výkon přibližně ${fmtComma(
-        problem.PW / F[problem.P.u]
-      )} ${problem.P.u}.`;
-    } else {
-      answer = `${problem.device.name} má příkon přibližně ${fmtComma(
-        problem.P0W / F[problem.P0.u]
-      )} ${problem.P0.u}.`;
-    }
-    ansBox.textContent = hasAns
-      ? `Vzorová odpověď: ${answer}`
-      : "Doplň číselný výsledek do věty nad tím.";
-    ansBox.classList.add(hasAns ? "success" : "error");
-  }
 }
+
 
 // ---------- Ovládání ----------
 
