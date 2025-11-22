@@ -585,6 +585,32 @@ body {
   text-align: center;
 }
 
+.input-inline {
+  display: inline-block;
+  max-width: 8rem;
+  margin: 0 0.35rem;
+}
+
+/* --- jemné zvětšení písma --- */
+body {
+  font-size: 17px; /* místo původních 16px – vše se jemně zvětší */
+}
+
+.zadani-text {
+  font-size: 1.08rem;
+}
+
+/* --- jistota zarovnání řádků v zápisu --- */
+.write-row {
+  align-items: center;
+}
+
+.write-label {
+  width: 2.7rem;
+  display: flex;
+  align-items: center;
+}
+
 /* === RESPONZIVNÍ === */
 
 @media (max-width: 768px) {
