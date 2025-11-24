@@ -80,71 +80,60 @@ const DEVICES = [
 
 function makeProblem() {
   const ranges = DIFF[difficulty] || DIFF.lehka;
-  const dev = choose(DEVICES);
-  const type = choose(["eta", "P", "P0"]); // neznámá veličina
+  const dev    = choose(DEVICES);
+  const type   = choose(["eta", "P", "P0"]); // neznámá veličina
 
-  // 1) Vybereme jednotky příkonu a výkonu podle obtížnosti
-  let uP0 = "W";
-  let uP = "W";
+  // 1) spočítáme „pravdu“ v Wattech
+  let P0W = pickInt(ranges.p0W[0], ranges.p0W[1]);   // vždy v W
+  let eta = pickInt(ranges.eta[0], ranges.eta[1]);   // v %
+
+  let PW  = Math.round(P0W * (eta / 100));           // taky v W (zaokrouhlené)
+
+  // 2) vybereme jednotky pro zobrazení
+  let unitP0, unitP;
 
   if (difficulty === "lehka") {
-    // stejné jednotky
-    uP0 = uP = choose(units);
-  } else {
-    // různé jednotky, ale pořád obě "hezké"
-    uP0 = choose(units);
+    // P₀ a P ve stejných jednotkách, bez nul
+    unitP0 = unitP = choose(["W", "kW", "MW"]);
+
+  } else { // "normalni"
+    // různé jednotky; když by po převodu vyšla nula, spadneme na W
+    const allUnits = ["W", "kW", "MW"];
+    unitP0 = choose(allUnits);
     do {
-      uP = choose(units);
-    } while (uP === uP0);
+      unitP = choose(allUnits);
+    } while (unitP === unitP0);
   }
 
-  // 2) Příkon P0 jako "hezké" číslo v dané jednotce
-  const baseRange = dev.p0W || ranges.p0W;
-  const P0Nice = makeNicePower(baseRange[0], baseRange[1], uP0);
-  const P0W = P0Nice.watts;
-
-  // 3) η (celé procento, v rozmezí)
-  const eta = pickInt(
-    Math.max(ranges.eta[0], dev.eta[0]),
-    Math.min(ranges.eta[1], dev.eta[1])
-  );
-
-  // 4) Výkon P (vždy zakládáme na W)
-   // výkon zaokrouhlený na celé W a nikdy ne 0
-  const PW = Math.max(1, Math.round(P0W * (eta / 100)));
-
-
-  // P převedeme do "hezkých" jednotek uP
-  let PNice;
-  if (uP === "W") {
-    PNice = { value: PW, unit: "W", watts: PW };
-  } else if (uP === "kW") {
-    const v = Math.round(PW / 1000);
-    PNice = { value: v, unit: "kW", watts: v * 1000 };
-  } else {
-    const v = Math.round(PW / 1_000_000);
-    PNice = { value: v, unit: "MW", watts: v * 1_000_000 };
+  function toUnit(w, u) {
+    let v = w / F[u];
+    // chceme hezká nenulová celá čísla
+    v = Math.max(1, Math.round(v));
+    return { v, u };
   }
 
-  const P0 = { v: P0Nice.value, u: uP0 };
-  const P = { v: PNice.value, u: uP };
+  const P0 = toUnit(P0W, unitP0);
+  const P  = toUnit(PW,  unitP);
 
-  let text = "",
-    ask = "";
+  let text = "", ask = "";
 
   if (type === "eta") {
-    text = `${dev.name} odebírá příkon P₀ = ${fmtComma(P0.v)} ${P0.u}. Užitečný výkon je P = ${fmtComma(P.v)} ${P.u}.`;
-    ask = "Urči účinnost zařízení η v procentech.";
+    text = `${dev.name} odebírá příkon P₀ = ${fmtComma(P0.v)} ${P0.u}. ` +
+           `Užitečný výkon je P = ${fmtComma(P.v)} ${P.u}.`;
+    ask  = "Urči účinnost zařízení η v procentech.";
   } else if (type === "P") {
-    text = `${dev.name} pracuje s účinností η = ${eta} %. Odebírá příkon P₀ = ${fmtComma(P0.v)} ${P0.u}. Urči užitečný výkon P.`;
-    ask = "Urči užitečný výkon P.";
+    text = `${dev.name} pracuje s účinností η = ${eta} %. ` +
+           `Odebírá příkon P₀ = ${fmtComma(P0.v)} ${P0.u}. Urči užitečný výkon P.`;
+    ask  = "Urči užitečný výkon P.";
   } else {
-    text = `${dev.name} má účinnost η = ${eta} %. Dodává užitečný výkon P = ${fmtComma(P.v)} ${P.u}. Urči celkový příkon P₀.`;
-    ask = "Urči celkový příkon P₀.";
+    text = `${dev.name} má účinnost η = ${eta} %. ` +
+           `Dodává užitečný výkon P = ${fmtComma(P.v)} ${P.u}. Urči celkový příkon P₀.`;
+    ask  = "Urči celkový příkon P₀.";
   }
 
   return { device: dev, type, P0W, PW, eta, P0, P, text, ask };
 }
+
 
 // ---------- UI prvky ----------
 
@@ -822,17 +811,21 @@ function doCheck() {
   const tolRel = 0.005; // 0,5 %
 
   if (problem.type === "eta") {
-    const v = toNum(resVal?.value);
-    if (isFinite(v)) {
-      acc = 100 - Math.min(100, Math.abs(v - problem.eta));
-      ok  = Math.abs(v - problem.eta) <= Math.max(1e-6, problem.eta * tolRel);
-    }
-    msg =
-      goodFormula && ok
-        ? `Vzorec i výsledek jsou v pořádku. η ≈ ${fmtComma(problem.eta)} %.`
-        : !goodFormula
-        ? "Vzorec není zapsán správně."
-        : `Výsledek nesouhlasí. Očekává se přibližně ${fmtComma(problem.eta)} %.`;
+  const v = toNum(resVal?.value);
+  if (isFinite(v)) {
+    // dovolíme ±1 % bod (tj. 54–56 je ok pro 55)
+    const diff = Math.abs(v - problem.eta);
+    acc = Math.max(0, 100 - diff);   // jednoduché skóre
+    ok  = diff <= 1.0;               // tolerantnější
+  }
+  msg =
+    goodFormula && ok
+      ? `Vzorec i výsledek jsou v pořádku. η ≈ ${fmtComma(problem.eta)} %.`
+      : !goodFormula
+      ? "Vzorec není zapsán správně."
+      : `Výsledek nesouhlasí. Očekává se přibližně ${fmtComma(problem.eta)} %.`;
+}
+
   } else if (problem.type === "P") {
     const v = toNum(resVal?.value);
     const u = resUnit?.value || "W";
