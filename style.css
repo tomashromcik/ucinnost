@@ -611,6 +611,136 @@ body {
   align-items: center;
 }
 
+.section-block {
+  margin-top: 1.8rem;
+}
+
+.section-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.input.wide {
+  width: 100%;
+}
+
+.inline-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+
+.inline-buttons button {
+  min-width: 2.4rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: #f9fafb;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.inline-buttons button:hover {
+  background: rgba(0, 220, 130, 0.18);
+  border-color: rgba(0, 220, 130, 0.8);
+}
+
+.tools-row {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.tools-buttons {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.btn-secondary.small {
+  padding: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+}
+
+.tools-panel {
+  margin-bottom: 1rem;
+}
+
+.triangle-panel img {
+  max-width: 260px;
+  width: 100%;
+  display: block;
+  margin: 0.6rem 0;
+}
+
+.calc-panel {
+  margin-top: 0.4rem;
+}
+
+.calc-display {
+  background: rgba(15, 23, 42, 0.9);
+  border-radius: 0.75rem;
+  padding: 0.5rem 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.calc-exp {
+  font-size: 0.9rem;
+  color: rgba(226, 232, 240, 0.8);
+  min-height: 1.1rem;
+}
+
+.calc-res {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e5fffb;
+  min-height: 1.3rem;
+}
+
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.calc-grid .key {
+  padding: 0.45rem 0;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  background: rgba(15, 23, 42, 0.95);
+  color: #e5e7eb;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.calc-grid .key-op {
+  color: #a5b4fc;
+}
+
+.calc-grid .key-eq {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border-color: transparent;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.answer-box {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.answer-input {
+  width: 7rem;
+}
+
+.answer-unit {
+  width: 5rem;
+}
+
+
 /* === RESPONZIVNÍ === */
 
 @media (max-width: 768px) {
