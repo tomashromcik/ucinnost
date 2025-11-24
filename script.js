@@ -754,65 +754,55 @@ function setStats() {
 
 // ---------- Kontrola (krok 2) ----------
 
-functionfunction doCheck() {
+// ---------- Kontrola (krok 2) ----------
+
+function doCheck() {
   if (step !== 2 || !problem) return;
 
   const box    = document.getElementById("calcMsg");
+  const ansBox = document.getElementById("autoAnswer");
+
   if (box) {
     box.textContent = "";
-    box.className = "feedback";
+    box.className = "feedback muted";
   }
-
-  const resVal  = document.getElementById("resVal");
-  const resUnit = document.getElementById("resUnit");
-  const ansVal  = document.getElementById("ansVal");
-  const ansUnit = document.getElementById("ansUnit");
+  if (ansBox) {
+    ansBox.textContent = "";
+    ansBox.className = "feedback muted";
+  }
 
   const formula = (document.getElementById("formula")?.value || "")
     .replace(/\s+/g, "")
     .replace(/eta/gi, "η");
 
-  // 1) Když něco chybí, rovnou chyba
-  if (!resVal || !ansVal || !ansUnit) {
-    if (box) {
-      box.textContent = "Chybí některé prvky stránky – zkus obnovit stránku (F5).";
-      box.classList.add("error");
-    }
-    return;
-  }
-
-  if (resVal.value.trim() === "" ||
-      (problem.type !== "eta" && (!resUnit || !["W","kW","MW"].includes(resUnit.value))) ||
-      ansVal.value.trim() === "" ||
-      ansUnit.value === "") {
-    if (box) {
-      box.textContent = "Doplň výsledek i odpověď včetně jednotek.";
-      box.classList.add("error");
-    }
-    stats.err++;
-    setStats();
-    return;
-  }
-
-  // 2) kontrola vzorce
   let goodFormula = false;
-  if (problem.type === "eta")
+
+  if (problem.type === "eta") {
     goodFormula = formula === "η=P/P₀" || formula === "η=P:P₀";
-  if (problem.type === "P")
-    goodFormula = ["P=η·P₀", "P=(η:100)·P₀", "P=η*P₀"].includes(formula);
-  if (problem.type === "P0")
+  }
+  if (problem.type === "P") {
+    goodFormula = [
+      "P=η·P₀",
+      "P=(η:100)·P₀",
+      "P=η*P₀",
+    ].includes(formula);
+  }
+  if (problem.type === "P0") {
     goodFormula =
       formula === "P₀=P/η" ||
       ["P₀=P/(η:100)", "P₀=P:(η:100)"].includes(formula);
+  }
 
-  // 3) numerická kontrola výsledku
-  let ok = false;
+  const resVal  = document.getElementById("resVal");
+  const resUnit = document.getElementById("resUnit");
+
+  let ok  = false;
   let acc = 0;
   let msg = "";
   const tolRel = 0.005; // 0,5 %
 
   if (problem.type === "eta") {
-    const v = toNum(resVal.value);
+    const v = toNum(resVal?.value);
     if (isFinite(v)) {
       acc = 100 - Math.min(100, Math.abs(v - problem.eta));
       ok  = Math.abs(v - problem.eta) <= Math.max(1e-6, problem.eta * tolRel);
@@ -824,8 +814,8 @@ functionfunction doCheck() {
         ? "Vzorec není zapsán správně."
         : `Výsledek nesouhlasí. Očekává se přibližně ${fmtComma(problem.eta)} %.`;
   } else if (problem.type === "P") {
-    const v = toNum(resVal.value);
-    const u = resUnit.value || "W";
+    const v = toNum(resVal?.value);
+    const u = resUnit?.value || "W";
     const got  = v * (F[u] || 1);
     const want = problem.PW;
     if (isFinite(got)) {
@@ -839,8 +829,8 @@ functionfunction doCheck() {
         ? "Vzorec není zapsán správně."
         : `Výsledek nesouhlasí. Očekává se přibližně ${fmtW(want)}.`;
   } else {
-    const v = toNum(resVal.value);
-    const u = resUnit.value || "W";
+    const v = toNum(resVal?.value);
+    const u = resUnit?.value || "W";
     const got  = v * (F[u] || 1);
     const want = problem.P0W;
     if (isFinite(got)) {
@@ -855,26 +845,12 @@ functionfunction doCheck() {
         : `Výsledek nesouhlasí. Očekává se přibližně ${fmtW(want)}.`;
   }
 
-  // 4) kontrola shody odpovědi s výsledkem (jen jednotky + číslo)
-  const ansV = toNum(ansVal.value);
-  const ansU = ansUnit.value;
-  let answerOk = true;
-
-  if (problem.type === "eta") {
-    // odpověď má být stejné číslo jako v resVal a jednotka %
-    if (!isFinite(ansV) || ansU !== "%") answerOk = false;
-    else if (Math.abs(ansV - toNum(resVal.value)) > 1e-6) answerOk = false;
-  } else {
-    if (!isFinite(ansV)) answerOk = false;
-    else if (!["W","kW","MW"].includes(ansU)) answerOk = false;
-  }
-
   if (box) {
-    box.textContent = msg + (answerOk ? " Odpověď je zapsaná správně." : " Odpověď není zapsaná správně.");
-    box.classList.add(ok && answerOk ? "success" : "error");
+    box.textContent = msg;
+    box.classList.add(ok ? "success" : "error");
   }
 
-  if (ok && answerOk) {
+  if (ok) {
     stats.ok++;
     stats.accSum += acc;
     stats.accN++;
@@ -882,7 +858,26 @@ functionfunction doCheck() {
     stats.err++;
   }
   setStats();
+
+  // automaticky generovaná slovní odpověď
+  if (ansBox) {
+    let answer = "";
+    if (problem.type === "eta") {
+      answer = `Účinnost ${problem.device.name.toLowerCase()} je přibližně ${fmtComma(
+        problem.eta
+      )} %.`;
+    } else if (problem.type === "P") {
+      answer = `Užitečný výkon zařízení je přibližně ${fmtW(problem.PW)}.`;
+    } else {
+      answer = `Celkový příkon zařízení je přibližně ${fmtW(problem.P0W)}.`;
+    }
+    ansBox.textContent = answer;
+    ansBox.classList.add(ok ? "success" : "error");
+  }
 }
+
+// ---------- Ovládání ----------
+
 
 
 // ---------- Ovládání ----------
