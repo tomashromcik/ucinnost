@@ -595,26 +595,46 @@ function renderStep2() {
     <div id="calcMsg" class="feedback muted"></div>
   `);
 
-  // symbolová tlačítka (vzorec / dosazení)
-  document.querySelectorAll(".inline-buttons").forEach((group) => {
-    const targetId = group.getAttribute("data-target");
-    group.querySelectorAll("button").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        let target = document.activeElement;
-        if (!(target && target.id === targetId)) {
-          target = document.getElementById(targetId);
-        }
-        if (!target) return;
-        const ins = btn.getAttribute("data-ins") || "";
-        const start = target.selectionStart ?? target.value.length;
-        const end   = target.selectionEnd   ?? target.value.length;
-        target.value = target.value.slice(0, start) + ins + target.value.slice(end);
-        const pos = start + ins.length;
-        target.focus();
-        target.selectionStart = target.selectionEnd = pos;
-      });
-    });
-  });
+  // --- pomocný panel: trojúhelník / kalkulačka ---
+const helperPanel     = document.getElementById("helperPanel");
+const helperTriangle  = document.getElementById("helperTriangle");
+const helperCalc      = document.getElementById("helperCalc");
+const btnTriangle     = document.getElementById("btnTriangle");
+const btnCalc         = document.getElementById("btnCalc");
+
+function showHelper(which) {
+  if (!helperPanel || !helperTriangle || !helperCalc) return;
+
+  helperPanel.classList.add("helper-panel--visible");
+
+  if (which === "triangle") {
+    helperTriangle.style.display = "block";
+    helperCalc.style.display     = "none";
+  } else if (which === "calc") {
+    helperTriangle.style.display = "none";
+    helperCalc.style.display     = "block";
+  }
+}
+
+function hideHelper() {
+  if (!helperPanel) return;
+  helperPanel.classList.remove("helper-panel--visible");
+}
+
+// kliknutí na tlačítka
+if (btnTriangle) {
+  btnTriangle.onclick = () => showHelper("triangle");
+}
+if (btnCalc) {
+  btnCalc.onclick = () => showHelper("calc");
+}
+
+// případné tlačítko „zavřít“ v panelu
+const helperClose = document.getElementById("helperClose");
+if (helperClose) {
+  helperClose.onclick = hideHelper;
+}
+
 
   // kalkulačka + trojúhelník – jednoduché přepínání panelů
   const toolsPanel = document.getElementById("toolsPanel");
