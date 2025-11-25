@@ -1,773 +1,529 @@
-/* ===== ZÁKLAD ===== */
-
-:root {
-  --bg: #050814;
-  --card: #0c1220;
-  --card-soft: #12192a;
-  --accent: #19c37d;
-  --accent-soft: rgba(25, 195, 125, 0.12);
-  --accent-soft2: rgba(25, 195, 125, 0.06);
-  --border-subtle: #1e2840;
-  --text: #f5f7ff;
-  --muted: #8b92aa;
-  --error: #ff5c7a;
-  --success: #35d08a;
-  --input-bg: #111727;
-  --input-border: #202a40;
-  --input-focus: #2a7fff;
-  --tool-bg: rgba(17, 23, 39, 0.95);
-  --tool-border: #252f47;
-  --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-}
-
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-html,
+:root {
+  --bg-body: #020617;
+  --bg-card: #0b1220;
+  --bg-input: #020617;
+  --border-subtle: #1f2937;
+  --border-strong: #293449;
+  --accent: #4ade80;
+  --accent-soft: rgba(74, 222, 128, 0.4);
+  --text-main: #e5e7eb;
+  --text-muted: #9ca3af;
+  --danger: #f97373;
+}
+
 body {
   margin: 0;
-  padding: 0;
-  background: radial-gradient(circle at top, #111826 0, #050814 55%, #020310 100%);
-  color: var(--text);
-  font-family: var(--font-main);
-  font-size: 16px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top, #020617 0, #020617 40%, #000 100%);
+  color: var(--text-main);
 }
 
 .page {
-  max-width: 1120px;
+  min-height: 100vh;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 1.5rem 1rem 2.5rem;
+  padding: 24px 16px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-/* ===== HLAVIČKA ===== */
+/* Topbar */
 
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 0 1.25rem;
 }
 
 .brand {
   font-weight: 600;
-  letter-spacing: 0.03em;
-  font-size: 1.25rem;
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
+  font-size: 20px;
 }
 
-/* ===== KARTY ===== */
+/* Cards */
 
 .card {
-  background: radial-gradient(circle at top left, #151c32 0, #0c1220 50%, #080b16 100%);
-  border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  padding: 1.5rem 1.75rem;
-  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.75);
-  margin-bottom: 1.25rem;
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 16px 20px 18px;
+  box-shadow:
+    0 18px 40px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(15, 23, 42, 0.6);
 }
 
 /* Zadání */
 
 .zadani-card h1 {
-  font-size: 1.4rem;
-  margin: 0 0 0.75rem;
+  margin: 0 0 6px;
+  font-size: 20px;
 }
 
 .zadani-header {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  align-items: center;
-  gap: 1.5rem;
-  margin-bottom: 0.75rem;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .zadani-controls {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .zadani-text {
-  background: var(--card-soft);
-  border-radius: 12px;
-  border: 1px dashed var(--border-subtle);
-  padding: 0.9rem 1.1rem;
-  font-size: 1.02rem;
+  margin-top: 6px;
+  font-size: 15px;
   line-height: 1.5;
 }
 
-.zadani-text p {
-  margin: 0 0 0.4rem;
-}
-
-.zadani-text p:last-child {
-  margin-bottom: 0;
-}
-
-/* Postup */
-
-.postup-card {
-  margin-top: 0.5rem;
-}
-
-.postup-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-
-.postup-title {
-  font-size: 1rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-/* Kroky (tabs) */
-
-.steps {
-  display: inline-flex;
-  background: rgba(15, 23, 42, 0.9);
-  border-radius: 999px;
-  padding: 2px;
-  border: 1px solid rgba(148, 163, 184, 0.22);
-}
-
-.step {
-  position: relative;
-  border: none;
-  background: transparent;
-  color: var(--muted);
-  border-radius: 999px;
-  padding: 0.25rem 0.9rem 0.25rem 0.35rem;
-  font-size: 0.9rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  cursor: default;
-}
-
-.step span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.4rem;
-  height: 1.4rem;
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.5);
-  font-size: 0.8rem;
-}
-
-.step.active {
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-.step.active span {
-  border-color: var(--accent);
-}
-
-/* Obsah kroku */
-
-.content {
-  margin-top: 0.75rem;
-}
-
-/* ===== FORM PRVKY ===== */
+/* Inputs, buttons */
 
 .input {
-  background: var(--input-bg);
-  border-radius: 999px;
-  border: 1px solid var(--input-border);
-  color: var(--text);
-  padding: 0.55rem 0.9rem;
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s;
+  background: var(--bg-input);
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  color: var(--text-main);
+  padding: 7px 10px;
+  font-size: 14px;
+  min-width: 0;
 }
 
 .input::placeholder {
-  color: rgba(148, 163, 184, 0.7);
+  color: #6b7280;
 }
 
 .input:focus {
-  border-color: var(--input-focus);
-  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.35);
-  background: #151b30;
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent-soft);
 }
 
 .select {
-  padding-right: 2.2rem;
-  appearance: none;
-  background-image: linear-gradient(45deg, transparent 50%, #e5e7eb 50%),
-    linear-gradient(135deg, #e5e7eb 50%, transparent 50%);
-  background-position: calc(100% - 15px) calc(0.9em),
-    calc(100% - 10px) calc(0.9em);
-  background-size: 5px 5px, 5px 5px;
-  background-repeat: no-repeat;
+  padding-right: 26px;
 }
-
-/* Buttons */
-
-.btn {
-  border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.5);
-  padding: 0.55rem 1.1rem;
-  background: rgba(15, 23, 42, 0.95);
-  color: var(--text);
-  font-size: 0.95rem;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s;
-}
-
-.btn:hover {
-  background: rgba(30, 64, 175, 0.8);
-  border-color: rgba(191, 219, 254, 0.7);
-}
-
-.btn:active {
-  transform: translateY(1px);
-}
-
-.btn.primary {
-  background: linear-gradient(135deg, #22c55e, #4ade80);
-  color: #041107;
-  border-color: transparent;
-}
-
-.btn.primary:hover {
-  background: linear-gradient(135deg, #16a34a, #22c55e);
-}
-
-.btn.ghost {
-  background: transparent;
-  border-color: rgba(148, 163, 184, 0.45);
-}
-
-.btn.small {
-  padding: 0.35rem 0.85rem;
-  font-size: 0.85rem;
-}
-
-.btn:disabled {
-  opacity: 0.35;
-  cursor: default;
-  background: rgba(15, 23, 42, 0.7);
-}
-
-/* Inline label */
 
 .label-inline {
   display: inline-flex;
   flex-direction: column;
-  gap: 0.15rem;
-  font-size: 0.8rem;
-  color: var(--muted);
+  gap: 4px;
+  font-size: 13px;
+  color: var(--text-muted);
 }
 
-/* === ZÁPIS (krok 1) === */
+.btn {
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: #111827;
+  color: var(--text-main);
+  padding: 7px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
+}
+
+.btn.primary {
+  background: linear-gradient(135deg, #22c55e, #14b8a6);
+  border-color: transparent;
+  color: #020617;
+}
+
+.btn.ghost {
+  background: transparent;
+}
+
+.btn.small {
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Postup card */
+
+.postup-card .postup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.postup-title {
+  font-weight: 500;
+  font-size: 15px;
+}
+
+.steps {
+  display: flex;
+  gap: 8px;
+}
+
+.step {
+  border-radius: 999px;
+  border: 1px solid #1f2937;
+  background: #020617;
+  color: var(--text-muted);
+  font-size: 13px;
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.step span {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #111827;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+}
+
+.step.active {
+  border-color: var(--accent);
+  color: var(--text-main);
+}
+
+.step.active span {
+  background: var(--accent);
+  color: #022c22;
+}
+
+/* Content (kroky) */
+
+.content {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
 .subtitle {
-  font-size: 1.2rem;
-  margin: 0 0 0.5rem;
+  margin: 0;
+  font-size: 18px;
 }
 
-.subtitle + p {
-  margin-top: 0;
-  color: var(--muted);
-  font-size: 0.93rem;
+.hint {
+  margin: 4px 0 8px;
+  font-size: 13px;
+  color: var(--text-muted);
 }
+
+/* Zápis */
 
 .write-row {
   display: flex;
   align-items: center;
-  margin-top: 0.85rem;
-  gap: 0.75rem;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .write-label {
-  width: 2.5rem;
-  font-weight: 600;
-  font-size: 1rem;
+  min-width: 52px;
+  font-weight: 500;
+  font-size: 14px;
 }
 
-.write-label span {
-  display: inline-block;
-  min-width: 1.6rem;
-}
-
-.write-main {
-  display: flex;
+.write-input {
   flex: 1;
-  gap: 0.5rem;
+  min-width: 120px;
 }
 
-/* P0 a P: input + select stejné dohromady jako řádek η */
-
-.write-main.power .input.power-val {
-  flex: 2;
-}
-
-.write-main.power .input.power-unit {
-  flex: 1.1;
-}
-
-/* η: dvě pole + % = uprostřed, šířka dohromady jako power řádek */
-
-.write-main.eta {
-  align-items: center;
-}
-
-.write-main.eta .input.eta-pct {
-  flex: 1.3;
-}
-
-.write-main.eta .eta-sign {
-  flex: 0;
-  font-size: 0.95rem;
-  color: var(--muted);
-}
-
-.write-main.eta .input.eta-dec {
-  flex: 1.3;
+.unit-select {
+  width: 80px;
 }
 
 .unknown-label {
-  white-space: nowrap;
-  font-size: 0.9rem;
-  color: var(--muted);
-}
-
-/* Feedback */
-
-.feedback {
-  margin-top: 0.75rem;
-  font-size: 0.9rem;
-  color: var(--muted);
-}
-
-.feedback.success {
-  color: var(--success);
-}
-
-.feedback.error {
-  color: var(--error);
-}
-
-/* === AKCE KARTY POSTUP === */
-
-.actions {
-  margin-top: 1.5rem;
-  display: flex;
-  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+  display: inline-flex;
   align-items: center;
-  border-top: 1px solid rgba(148, 163, 184, 0.2);
-  padding-top: 0.9rem;
+  gap: 4px;
 }
 
-.actions-right {
-  display: flex;
-  gap: 0.6rem;
+.eta-row .eta-pct {
+  width: 80px;
 }
 
-/* === SHRNUÍ ZÁPISU + NÁSTROJE === */
+.eta-row .eta-dec {
+  flex: 1;
+  min-width: 100px;
+}
+
+.eta-eq {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+/* Shrnutí zápisu, odpověď */
 
 .summary-box {
-  background: radial-gradient(circle at top, #151b32 0, #101628 55%, #090d18 100%);
-  border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  padding: 0.9rem 1rem;
-  margin: 0.6rem 0 0.9rem;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid var(--border-subtle);
+  padding: 10px 12px;
+  margin-bottom: 4px;
 }
 
 .summary-title {
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 0.15rem;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
 }
 
 .summary-line {
-  font-size: 0.98rem;
-  line-height: 1.4;
+  font-size: 14px;
 }
 
-/* Nástrojové stripy */
+/* Nástroje (trojúhelník + kalkulačka) */
 
-.tools-strip {
+.tools-bar {
   display: flex;
-  gap: 0.6rem;
-  margin: 0 0 0.6rem;
+  gap: 8px;
+  margin-top: 6px;
 }
 
-.tool-btn {
+.tool-toggle {
   border-radius: 999px;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  padding: 0.4rem 0.9rem;
-  background: linear-gradient(135deg, #151b32, #0f172a);
-  color: #e5e7eb;
-  font-size: 0.9rem;
+  border: 1px solid var(--border-subtle);
+  background: #020617;
+  color: var(--text-main);
+  font-size: 13px;
+  padding: 5px 12px;
   cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
 }
 
-.tool-btn:hover {
-  border-color: rgba(148, 163, 184, 0.7);
-  background: linear-gradient(135deg, #1e293b, #020617);
-}
-
-.tool-btn.active {
+.tool-toggle--active {
+  background: #1e293b;
   border-color: var(--accent);
-  background: var(--accent-soft);
-  color: var(--accent);
 }
 
 .tools-panel {
-  background: var(--tool-bg);
-  border-radius: 14px;
-  border: 1px solid var(--tool-border);
-  padding: 0.7rem 0.9rem;
-  margin-bottom: 0.75rem;
+  margin-top: 8px;
+  border-radius: 12px;
+  background: #020617;
+  border: 1px dashed var(--border-subtle);
+  padding: 8px 10px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.tools-panel.hidden {
   display: none;
 }
 
-.tools-panel.visible {
-  display: block;
+.tool-panel {
+  flex: 1;
+  min-width: 220px;
 }
 
-.tool-view {
-  display: none;
-}
-
-.tool-view.active {
-  display: block;
-}
-
-.tool-view img {
+.triangle-img {
   max-width: 100%;
+  height: auto;
   display: block;
   margin: 0 auto;
 }
 
 /* Kalkulačka */
 
-.calc {
-  display: inline-flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
 .calc-display {
   background: #020617;
-  border-radius: 10px;
-  border: 1px solid #334155;
-  padding: 0.4rem 0.6rem;
-  min-width: 220px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  padding: 8px 10px;
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+  font-size: 14px;
+  min-height: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.calc-line-main {
-  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
-    Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 0.95rem;
-  color: #e5e7eb;
+.calc-display-history {
+  font-size: 11px;
+  color: var(--text-muted);
 }
 
-.calc-line-sub {
-  font-size: 0.8rem;
-  color: #9ca3af;
-  margin-top: 0.15rem;
+.calc-display-main {
+  text-align: right;
 }
 
-.calc-grid {
+.calc-keys {
+  margin-top: 8px;
   display: grid;
-  grid-template-columns: repeat(4, minmax(46px, 1fr));
-  gap: 0.4rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
 }
 
-.calc-btn {
-  border-radius: 9px;
-  border: 1px solid #1f2937;
-  padding: 0.35rem 0.1rem;
+.calc-key {
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
   background: #020617;
-  color: #e5e7eb;
-  font-size: 0.95rem;
+  font-size: 14px;
+  padding: 6px 0;
   cursor: pointer;
 }
 
-.calc-btn.op {
-  color: #60a5fa;
+.calc-key.op {
+  color: var(--accent);
 }
 
-.calc-btn.fn {
-  color: #f97316;
-}
-
-.calc-btn.equals {
-  background: #22c55e;
-  color: #022c22;
-  border-color: #22c55e;
-}
-
-/* === VÝSLEDEK / ODPVĚĎ (krok 2) === */
-
-.full-input {
-  width: 100%;
-  margin-top: 0.35rem;
-}
-
-/* Odpověď věta s inputem */
-
-.answer-sentence {
-  margin-top: 0.45rem;
-  font-size: 1rem;
-}
-
-.answer-sentence input {
-  width: 8rem;
-  margin: 0 0.35rem;
-}
-
-/* === STATISTIKY === */
-
-.results-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.75rem;
-}
-
-.results-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.9rem;
-}
-
-.stat {
-  background: var(--card-soft);
-  border-radius: 14px;
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  padding: 0.75rem 0.9rem;
-}
-
-.stat .k {
-  display: block;
-  font-size: 0.85rem;
-  color: var(--muted);
-  margin-bottom: 0.25rem;
-}
-
-.stat .v {
-  font-size: 1.4rem;
-  font-weight: 600;
-}
-
-/* === FOOTER === */
-
-.footer {
-  margin-top: 0.5rem;
-  font-size: 0.8rem;
-  color: var(--muted);
-  text-align: center;
-}
-
-.input-inline {
-  display: inline-block;
-  max-width: 8rem;
-  margin: 0 0.35rem;
-}
-
-/* --- jemné zvětšení písma --- */
-body {
-  font-size: 17px; /* místo původních 16px – vše se jemně zvětší */
-}
-
-.zadani-text {
-  font-size: 1.08rem;
-}
-
-/* --- jistota zarovnání řádků v zápisu --- */
-.write-row {
-  align-items: center;
-}
-
-.write-label {
-  width: 2.7rem;
-  display: flex;
-  align-items: center;
-}
-
-.section-block {
-  margin-top: 1.8rem;
-}
-
-.section-label {
-  display: block;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.input.wide {
-  width: 100%;
-}
+/* Formule */
 
 .inline-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 0.6rem;
+  gap: 6px;
+  margin-bottom: 6px;
+  margin-top: 4px;
 }
 
 .inline-buttons button {
-  min-width: 2.4rem;
-  padding: 0.3rem 0.7rem;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
-  color: #f9fafb;
-  font-size: 0.9rem;
+  border: 1px solid var(--border-subtle);
+  background: #020617;
+  color: var(--text-main);
+  font-size: 13px;
+  padding: 4px 10px;
   cursor: pointer;
 }
 
 .inline-buttons button:hover {
-  background: rgba(0, 220, 130, 0.18);
-  border-color: rgba(0, 220, 130, 0.8);
+  border-color: var(--accent);
 }
 
-.tools-row {
-  margin-top: 1rem;
-  margin-bottom: 0.5rem;
-}
+/* Odpověď */
 
-.tools-buttons {
-  display: flex;
-  gap: 0.6rem;
-}
-
-.btn-secondary.small {
-  padding: 0.35rem 0.9rem;
-  font-size: 0.85rem;
-}
-
-.tools-panel {
-  margin-bottom: 1rem;
-}
-
-.triangle-panel img {
-  max-width: 260px;
-  width: 100%;
-  display: block;
-  margin: 0.6rem 0;
-}
-
-.calc-panel {
-  margin-top: 0.4rem;
-}
-
-.calc-display {
-  background: rgba(15, 23, 42, 0.9);
-  border-radius: 0.75rem;
-  padding: 0.5rem 0.8rem;
-  margin-bottom: 0.5rem;
-}
-
-.calc-exp {
-  font-size: 0.9rem;
-  color: rgba(226, 232, 240, 0.8);
-  min-height: 1.1rem;
-}
-
-.calc-res {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #e5fffb;
-  min-height: 1.3rem;
-}
-
-.calc-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.35rem;
-}
-
-.calc-grid .key {
-  padding: 0.45rem 0;
-  border-radius: 0.75rem;
-  border: 1px solid rgba(148, 163, 184, 0.45);
-  background: rgba(15, 23, 42, 0.95);
-  color: #e5e7eb;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-
-.calc-grid .key-op {
-  color: #a5b4fc;
-}
-
-.calc-grid .key-eq {
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-  border-color: transparent;
-  color: #0f172a;
-  font-weight: 600;
-}
-
-.answer-box {
-  display: inline-flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+.answer-line {
+  margin-top: 4px;
 }
 
 .answer-input {
-  width: 7rem;
+  width: 120px;
+  display: inline-block;
+  margin-right: 8px;
 }
 
-.answer-unit {
-  width: 5rem;
+/* Feedback */
+
+.feedback {
+  font-size: 13px;
+  margin-top: 4px;
 }
 
+.feedback.muted {
+  color: var(--text-muted);
+}
 
-/* === RESPONZIVNÍ === */
+.feedback.success {
+  color: var(--accent);
+}
 
-@media (max-width: 768px) {
-  .zadani-header {
+.feedback.error {
+  color: var(--danger);
+}
+
+/* Actions */
+
+.actions {
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 12px;
+  padding-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.actions-right {
+  display: flex;
+  gap: 8px;
+}
+
+/* Results */
+
+.results-card .results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.results-grid {
+  margin-top: 8px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  flex: 1;
+  min-width: 120px;
+  border-radius: 12px;
+  background: #020617;
+  border: 1px solid var(--border-subtle);
+  padding: 8px 10px;
+}
+
+.stat .k {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.stat .v {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* Footer */
+
+.footer {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6b7280;
+  text-align: center;
+}
+
+/* Responsivita */
+
+@media (max-width: 720px) {
+  .page {
+    padding: 12px;
+  }
+
+  .zadani-header,
+  .postup-card .postup-header {
     flex-direction: column;
     align-items: flex-start;
   }
-  .zadani-controls {
-    align-self: stretch;
-    justify-content: space-between;
-  }
-  .write-row {
-    flex-wrap: wrap;
-    align-items: flex-start;
-  }
-  .write-label {
-    width: 2rem;
-  }
+
   .actions {
-    flex-direction: column-reverse;
-    gap: 0.6rem;
-    align-items: stretch;
-  }
-  .actions-right {
-    justify-content: flex-end;
-  }
-  .results-grid {
-    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
