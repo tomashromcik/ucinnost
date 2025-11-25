@@ -83,56 +83,51 @@ function makeProblem() {
   const dev    = choose(DEVICES);
   const type   = choose(["eta", "P", "P0"]); // neznámá veličina
 
-  // 1) spočítáme „pravdu“ v Wattech
-  let P0W = pickInt(ranges.p0W[0], ranges.p0W[1]);   // vždy v W
-  let eta = pickInt(ranges.eta[0], ranges.eta[1]);   // v %
-
-  let PW  = Math.round(P0W * (eta / 100));           // taky v W (zaokrouhlené)
-
-  // 2) vybereme jednotky pro zobrazení
+  // ----- jednotky podle obtížnosti -----
+  const units = ["W", "kW", "MW"];
   let unitP0, unitP;
 
   if (difficulty === "lehka") {
-    // P₀ a P ve stejných jednotkách, bez nul
-    unitP0 = unitP = choose(["W", "kW", "MW"]);
-
-  } else { // "normalni"
-    // různé jednotky; když by po převodu vyšla nula, spadneme na W
-    const allUnits = ["W", "kW", "MW"];
-    unitP0 = choose(allUnits);
-    do {
-      unitP = choose(allUnits);
-    } while (unitP === unitP0);
+    // lehká: P0 a P ve stejných jednotkách
+    unitP0 = unitP = choose(units);
+  } else {
+    // normální: P0 a P v různých jednotkách
+    unitP0 = choose(units);
+    unitP = choose(units.filter((u) => u !== unitP0));
   }
 
-  function toUnit(w, u) {
-    let v = w / F[u];
-    // chceme hezká nenulová celá čísla
-    v = Math.max(1, Math.round(v));
-    return { v, u };
-  }
+  const f0 = F[unitP0];
+  const fP = F[unitP];
 
-  const P0 = toUnit(P0W, unitP0);
-  const P  = toUnit(PW,  unitP);
+  // ----- vybereme "rozumný" příkon v W a účinnost -----
+  const P0W = pick(ranges.p0W[0], ranges.p0W[1]);      // W
+  const eta = pickInt(ranges.eta[0], ranges.eta[1]);   // %
+
+  const PW = P0W * (eta / 100);                        // W
+
+  // nic nebudeme zbytečně zaokrouhlovat na 0 – necháme reálná čísla
+  const P0 = { v: P0W / f0, u: unitP0 };
+  const P  = { v: PW  / fP, u: unitP };
 
   let text = "", ask = "";
 
   if (type === "eta") {
-    text = `${dev.name} odebírá příkon P₀ = ${fmtComma(P0.v)} ${P0.u}. ` +
-           `Užitečný výkon je P = ${fmtComma(P.v)} ${P.u}.`;
+    text = `${dev.name} odebírá příkon P₀ = ${fmtComma(P0.v)} ${P0.u}. `
+         + `Užitečný výkon je P = ${fmtComma(P.v)} ${P.u}.`;
     ask  = "Urči účinnost zařízení η v procentech.";
   } else if (type === "P") {
-    text = `${dev.name} pracuje s účinností η = ${eta} %. ` +
-           `Odebírá příkon P₀ = ${fmtComma(P0.v)} ${P0.u}. Urči užitečný výkon P.`;
+    text = `${dev.name} pracuje s účinností η = ${eta} %. `
+         + `Odebírá příkon P₀ = ${fmtComma(P0.v)} ${P0.u}. Urči užitečný výkon P.`;
     ask  = "Urči užitečný výkon P.";
   } else {
-    text = `${dev.name} má účinnost η = ${eta} %. ` +
-           `Dodává užitečný výkon P = ${fmtComma(P.v)} ${P.u}. Urči celkový příkon P₀.`;
+    text = `${dev.name} má účinnost η = ${eta} %. `
+         + `Dodává užitečný výkon P = ${fmtComma(P.v)} ${P.u}. Urči celkový příkon P₀.`;
     ask  = "Urči celkový příkon P₀.";
   }
 
   return { device: dev, type, P0W, PW, eta, P0, P, text, ask };
 }
+
 
 
 // ---------- UI prvky ----------
@@ -584,44 +579,7 @@ function renderStep2() {
     <div id="calcMsg" class="feedback muted"></div>
   `);
 
-  // --- pomocný panel: trojúhelník / kalkulačka ---
-const helperPanel     = document.getElementById("helperPanel");
-const helperTriangle  = document.getElementById("helperTriangle");
-const helperCalc      = document.getElementById("helperCalc");
-const btnTriangle     = document.getElementById("btnTriangle");
-const btnCalc         = document.getElementById("btnCalc");
-
-function showHelper(which) {
-  if (!helperPanel || !helperTriangle || !helperCalc) return;
-
-  helperPanel.classList.add("helper-panel--visible");
-
-  if (which === "triangle") {
-    helperTriangle.style.display = "block";
-    helperCalc.style.display     = "none";
-  } else if (which === "calc") {
-    helperTriangle.style.display = "none";
-    helperCalc.style.display     = "block";
-  }
-}
-
-function hideHelper() {
-  if (!helperPanel) return;
-  helperPanel.classList.remove("helper-panel--visible");
-}
-
-// kliknutí na tlačítka
-if (btnTriangle) {
-  btnTriangle.onclick = () => showHelper("triangle");
-}
-if (btnCalc) {
-  btnCalc.onclick = () => showHelper("calc");
-}
-
-// případné tlačítko „zavřít“ v panelu
-const helperClose = document.getElementById("helperClose");
-if (helperClose) {
-  helperClose.onclick = hideHelper;
+ 
 }
 
 
@@ -786,9 +744,24 @@ function doCheck() {
 
   let goodFormula = false;
 
-  if (problem.type === "eta") {
-    goodFormula = formula === "η=P/P₀" || formula === "η=P:P₀";
-  }
+   if (problem.type === "eta") {
+    const v = toNum(resVal?.value);
+
+    // povolíme větší toleranci, aby prošly i hodnoty jako 55,5 %
+    const tolAbs = 0.6; // ±0,6 procentního bodu
+
+    if (isFinite(v)) {
+      acc = 100 - Math.min(100, Math.abs(v - problem.eta));
+      ok  = Math.abs(v - problem.eta) <= tolAbs;
+    }
+
+    msg =
+      goodFormula && ok
+        ? `Vzorec i výsledek jsou v pořádku. η ≈ ${fmtComma(problem.eta)} %.`
+        : !goodFormula
+        ? "Vzorec není zapsán správně."
+        : `Výsledek nesouhlasí. Očekává se přibližně ${fmtComma(problem.eta)} %.`;
+
   if (problem.type === "P") {
     goodFormula = [
       "P=η·P₀",
