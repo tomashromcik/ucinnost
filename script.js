@@ -1,138 +1,130 @@
-// script.js — Účinnost: P₀, P, η (Zápis + Výpočet a odpověď)
+// script.js — Účinnost: P₀, P, η (2 kroky: Zápis + Výpočet a odpověď)
 "use strict";
 
-// ---------- Pomocné ----------
+// ---------- Konstanty a pomocné funkce ----------
+
 const F = { W: 1, kW: 1000, MW: 1_000_000 };
 
 const DIFF = {
-  lehka: {
-    p0W: [50, 500], // základ pro W / kW / MW se přepočítá
-    eta: [60, 95],
-  },
-  normalni: {
-    p0W: [500, 50000],
-    eta: [35, 90],
-  },
+  lehka: { p0W: [50, 500], eta: [60, 95] },
+  normalni: { p0W: [500, 50000], eta: [35, 90] },
 };
 
+const DEVICES = [
+  { id: "zarovka", name: "Žárovka" },
+  { id: "ledka", name: "LED žárovka" },
+  { id: "motor", name: "Elektromotor" },
+  { id: "cerpadlo", name: "Čerpadlo" },
+  { id: "turbina", name: "Turbína" },
+];
+
 let difficulty = "lehka";
+let step = 1; // 1 = Zápis, 2 = Výpočet + odpověď
 
-// krok 1 = Zápis, krok 2 = Výpočet a odpověď
-let step = 1;
-
-// aktuální úloha + statistika
 let problem = null;
 let stats = { ok: 0, err: 0, accSum: 0, accN: 0 };
-
-// stav zápisu z kroku 1 (pro shrnutí)
 let writeState = null;
 
-// "zámky" na Next (striktní průchod)
 const STRICT_FLOW = true;
 let gates = { writeOk: false, calcOk: false };
 
-const toNum = (s) => {
+const E = {};
+
+function toNum(s) {
   if (s == null) return NaN;
   return Number(String(s).trim().replace(/\s+/g, "").replace(",", "."));
-};
-const fmtComma = (x, d = 3) =>
-  Number(x).toFixed(d).replace(/\.?0+$/, "").replace(".", ",");
-
-// Výběr náhodných hodnot
-const pick = (min, max) => min + Math.random() * (max - min);
-const pickInt = (min, max) => Math.round(pick(min, max));
-const choose = (arr) => arr[Math.floor(Math.random() * arr.length)];
-
-// "Hezké" volby jednotek podle obtížnosti
-const units = ["W", "kW", "MW"];
-
-/**
- * Vrátí objekt {value, unit, watts} tak, aby value bylo celé číslo.
- */
-function makeNicePower(rangeMin, rangeMax, unit, preferStep = 10) {
-  if (unit === "W") {
-    const v = pickInt(rangeMin, rangeMax);
-    return { value: v, unit: "W", watts: v };
-  }
-  if (unit === "kW") {
-    const minKW = Math.max(1, Math.floor(rangeMin / 1000));
-    const maxKW = Math.max(minKW, Math.floor(rangeMax / 1000));
-    const v = pickInt(minKW, maxKW);
-    return { value: v, unit: "kW", watts: v * 1000 };
-  }
-  // MW
-  const minMW = Math.max(1, Math.floor(rangeMin / 1_000_000));
-  const maxMW = Math.max(minMW, Math.floor(rangeMax / 1_000_000));
-  const v = pickInt(minMW, maxMW);
-  return { value: v, unit: "MW", watts: v * 1_000_000 };
 }
 
-// ---------- Reálné rozsahy ----------
-const DEVICES = [
-  { id: "zarovka", name: "Žárovka", p0W: [5, 150], eta: [5, 25], rod: "f" },
-  { id: "ledka", name: "LED žárovka", p0W: [3, 30], eta: [25, 45], rod: "f" },
-  { id: "motor", name: "Elektromotor", p0W: [5_000, 500_000], eta: [60, 95], rod: "m" },
-  { id: "cerpadlo", name: "Čerpadlo", p0W: [500, 50_000], eta: [40, 80], rod: "n" },
-  { id: "turbina", name: "Turbína", p0W: [1_000_000, 50_000_000], eta: [30, 60], rod: "f" },
-];
+function fmtComma(x, d = 3) {
+  return Number(x)
+    .toFixed(d)
+    .replace(/\.?0+$/, "")
+    .replace(".", ",");
+}
+
+function unitizePower(w) {
+  if (w >= 1_000_000) return { v: w / 1_000_000, u: "MW" };
+  if (w >= 1000) return { v: w / 1000, u: "kW" };
+  return { v: w, u: "W" };
+}
+
+function fmtW(w) {
+  const u = unitizePower(w);
+  return `${fmtComma(u.v)} ${u.u}`;
+}
+
+function pick(min, max) {
+  return min + Math.random() * (max - min);
+}
+
+function pickInt(min, max) {
+  return Math.round(pick(min, max));
+}
+
+function choose(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
 // ---------- Generování úlohy ----------
 
 function makeProblem() {
   const ranges = DIFF[difficulty] || DIFF.lehka;
-  const dev    = choose(DEVICES);
-  const type   = choose(["eta", "P", "P0"]); // neznámá veličina
+  const dev = choose(DEVICES);
+  const type = choose(["eta", "P", "P0"]); // neznámá veličina
 
-  // ----- jednotky podle obtížnosti -----
+  let P0W = pickInt(ranges.p0W[0], ranges.p0W[1]); // ve W
+  const eta = pickInt(ranges.eta[0], ranges.eta[1]); // v %
+
+  let PW = Math.round(P0W * (eta / 100)); // ve W
+
   const units = ["W", "kW", "MW"];
   let unitP0, unitP;
 
   if (difficulty === "lehka") {
-    // lehká: P0 a P ve stejných jednotkách
-    unitP0 = unitP = choose(units);
+    // stejné jednotky, jednodušší
+    unitP0 = unitP = "W";
   } else {
-    // normální: P0 a P v různých jednotkách
+    // normální: různé jednotky
     unitP0 = choose(units);
-    unitP = choose(units.filter((u) => u !== unitP0));
+    const rest = units.filter((u) => u !== unitP0);
+    unitP = choose(rest.length ? rest : units);
   }
 
-  const f0 = F[unitP0];
-  const fP = F[unitP];
+  let P0 = { v: P0W / F[unitP0], u: unitP0 };
+  let P = { v: PW / F[unitP], u: unitP };
 
-  // ----- vybereme "rozumný" příkon v W a účinnost -----
-  const P0W = pick(ranges.p0W[0], ranges.p0W[1]);      // W
-  const eta = pickInt(ranges.eta[0], ranges.eta[1]);   // %
+  // u lehké úrovně trochu "učesat" čísla
+  if (difficulty === "lehka") {
+    P0.v = Math.round(P0.v);
+    P0W = P0.v * F[unitP0];
+    PW = Math.round(P0W * (eta / 100));
+    P.v = PW / F[unitP];
+  }
 
-  const PW = P0W * (eta / 100);                        // W
-
-  // nic nebudeme zbytečně zaokrouhlovat na 0 – necháme reálná čísla
-  const P0 = { v: P0W / f0, u: unitP0 };
-  const P  = { v: PW  / fP, u: unitP };
-
-  let text = "", ask = "";
+  let text = "";
+  let ask = "";
 
   if (type === "eta") {
-    text = `${dev.name} odebírá příkon P₀ = ${fmtComma(P0.v)} ${P0.u}. `
-         + `Užitečný výkon je P = ${fmtComma(P.v)} ${P.u}.`;
-    ask  = "Urči účinnost zařízení η v procentech.";
+    text =
+      `${dev.name} odebírá příkon P₀ = ${fmtComma(P0.v)} ${P0.u}. ` +
+      `Užitečný výkon je P = ${fmtComma(P.v)} ${P.u}.`;
+    ask = "Urči účinnost zařízení η v procentech.";
   } else if (type === "P") {
-    text = `${dev.name} pracuje s účinností η = ${eta} %. `
-         + `Odebírá příkon P₀ = ${fmtComma(P0.v)} ${P0.u}. Urči užitečný výkon P.`;
-    ask  = "Urči užitečný výkon P.";
+    text =
+      `${dev.name} pracuje s účinností η = ${eta} %. ` +
+      `Odebírá příkon P₀ = ${fmtComma(P0.v)} ${P0.u}. Urči užitečný výkon P.`;
+    ask = "Urči užitečný výkon P.";
   } else {
-    text = `${dev.name} má účinnost η = ${eta} %. `
-         + `Dodává užitečný výkon P = ${fmtComma(P.v)} ${P.u}. Urči celkový příkon P₀.`;
-    ask  = "Urči celkový příkon P₀.";
+    text =
+      `${dev.name} má účinnost η = ${eta} %. ` +
+      `Dodává užitečný výkon P = ${fmtComma(P.v)} ${P.u}. Urči celkový příkon P₀.`;
+    ask = "Urči celkový příkon P₀.";
   }
 
   return { device: dev, type, P0W, PW, eta, P0, P, text, ask };
 }
 
-
-
 // ---------- UI prvky ----------
-
-const E = {};
 
 function bindElements() {
   E.zadaniText = document.getElementById("zadaniText");
@@ -156,7 +148,7 @@ function renderZadani() {
   if (!E.zadaniText) return;
   if (!problem) {
     E.zadaniText.innerHTML =
-      '<span class="small muted">Něco se pokazilo, zkuste „Nová úloha“.</span>';
+      '<span class="small muted">Klikni na <b>Nová úloha</b> a začni.</span>';
     return;
   }
   E.zadaniText.innerHTML = `<p>${problem.text}</p><p><b>Otázka:</b> ${problem.ask}</p>`;
@@ -170,47 +162,40 @@ function renderStep1() {
 
   S(`
     <h2 class="subtitle">1. Zápis</h2>
-<p class="small muted">
-  Zapiš dané veličiny ze zadání. Jednu z nich označ jako <b>hledanou</b>.
-  U lehké obtížnosti zapisuj P₀ a P ve stejných jednotkách (W, kW nebo MW).
-</p>
-
+    <p class="hint">
+      Zapiš hodnoty P₀, P a η ze zadání. Vyber <b>jednu</b> hledanou veličinu.
+      U P₀ a P použij stejné jednotky jako v zadání.
+    </p>
 
     <div class="write-row">
-      <div class="write-label"><span>P₀</span> =</div>
-      <div class="write-main power">
-        <input id="p0Val" class="input power-val" type="text" inputmode="decimal" placeholder="111">
-        <select id="p0Unit" class="input power-unit select">
-          <option value="">Vyber</option>
-          <option>W</option><option>kW</option><option>MW</option>
-        </select>
-      </div>
+      <label class="write-label">P₀ =</label>
+      <input id="p0Val" class="input write-input" type="text" inputmode="decimal" placeholder="např. 120">
+      <select id="p0Unit" class="input unit-select">
+        <option value="">Vyber</option>
+        <option>W</option><option>kW</option><option>MW</option>
+      </select>
       <label class="unknown-label">
         <input id="p0Chk" type="checkbox"> hledaná veličina
       </label>
     </div>
 
     <div class="write-row">
-      <div class="write-label"><span>P</span> =</div>
-      <div class="write-main power">
-        <input id="pVal" class="input power-val" type="text" inputmode="decimal" placeholder="111">
-        <select id="pUnit" class="input power-unit select">
-          <option value="">Vyber</option>
-          <option>W</option><option>kW</option><option>MW</option>
-        </select>
-      </div>
+      <label class="write-label">P =</label>
+      <input id="pVal" class="input write-input" type="text" inputmode="decimal" placeholder="např. 75">
+      <select id="pUnit" class="input unit-select">
+        <option value="">Vyber</option>
+        <option>W</option><option>kW</option><option>MW</option>
+      </select>
       <label class="unknown-label">
         <input id="pChk" type="checkbox"> hledaná veličina
       </label>
     </div>
 
-    <div class="write-row">
-      <div class="write-label"><span>η</span> =</div>
-      <div class="write-main eta">
-        <input id="etaPct" class="input eta-pct" type="text" inputmode="decimal" placeholder="např. 75">
-        <span class="eta-sign">% =</span>
-        <input id="etaDec" class="input eta-dec" type="text" inputmode="decimal" placeholder="např. 0,75">
-      </div>
+    <div class="write-row eta-row">
+      <label class="write-label">η =</label>
+      <input id="etaPct" class="input eta-pct" type="text" inputmode="decimal" placeholder="např. 75">
+      <span class="eta-eq">% =</span>
+      <input id="etaDec" class="input eta-dec" type="text" inputmode="decimal" placeholder="např. 0,75">
       <label class="unknown-label">
         <input id="etaChk" type="checkbox"> hledaná veličina
       </label>
@@ -239,11 +224,12 @@ function renderStep1() {
       valEl.value = "";
       valEl.disabled = true;
       valEl.placeholder = "?";
+      unitEl.disabled = false; // i pro hledanou chceme jednotku výsledku
     } else {
       valEl.disabled = false;
-      valEl.placeholder = "111";
+      valEl.placeholder = "např. 120";
+      unitEl.disabled = false;
     }
-    unitEl.disabled = false; // jednotku vybíráme vždy
   }
 
   function setRowStateEta() {
@@ -268,9 +254,8 @@ function renderStep1() {
   setRowStateEta();
 
   function validateWrite() {
-    if (!msgBox) return;
+    if (!msgBox || !problem) return;
 
-    // 1) přesně jedna hledaná
     const unknowns = [];
     if (p0Chk.checked) unknowns.push("P0");
     if (pChk.checked) unknowns.push("P");
@@ -284,11 +269,9 @@ function renderStep1() {
       return;
     }
 
-    // 2) musí odpovídat skutečné neznámé z úlohy
     const typeMap = { P0: "P0", P: "P", eta: "eta" };
     const unknownKey = unknowns[0];
-    const problemType = problem.type;
-    if (typeMap[unknownKey] !== problemType) {
+    if (typeMap[unknownKey] !== problem.type) {
       gates.writeOk = false;
       msgBox.textContent = "Hledaná veličina neodpovídá otázce v zadání.";
       writeState = null;
@@ -299,7 +282,7 @@ function renderStep1() {
     let ok = true;
     const tolRel = 0.001;
 
-    // ----- P₀ -----
+    // P₀
     if (!p0Chk.checked) {
       const v = toNum(p0Val.value);
       const u = p0Unit.value;
@@ -316,7 +299,7 @@ function renderStep1() {
       if (!["W", "kW", "MW"].includes(p0Unit.value)) ok = false;
     }
 
-    // ----- P -----
+    // P
     if (!pChk.checked) {
       const v = toNum(pVal.value);
       const u = pUnit.value;
@@ -333,7 +316,7 @@ function renderStep1() {
       if (!["W", "kW", "MW"].includes(pUnit.value)) ok = false;
     }
 
-    // ----- η -----
+    // η
     if (!etaChk.checked) {
       const pct = toNum(etaPct.value);
       const dec = toNum(etaDec.value);
@@ -349,7 +332,7 @@ function renderStep1() {
 
     gates.writeOk = ok;
     msgBox.textContent = ok
-      ? "Zápis odpovídá zadání a η je správně převedena na desetinné číslo."
+      ? "Zápis odpovídá zadání a převod η je správný."
       : "Zápis není v pořádku — zkontroluj hodnoty, jednotky a převod η.";
 
     if (ok) {
@@ -392,11 +375,9 @@ function renderStep1() {
     if (!el) return;
     el.addEventListener("input", validateWrite);
     el.addEventListener("change", () => {
-      if (el === p0Chk || el === p0Val || el === p0Unit)
-        setRowStatePower(p0Val, p0Unit, p0Chk);
-      if (el === pChk || el === pVal || el === pUnit)
-        setRowStatePower(pVal, pUnit, pChk);
-      if (el === etaChk || el === etaPct || el === etaDec) setRowStateEta();
+      setRowStatePower(p0Val, p0Unit, p0Chk);
+      setRowStatePower(pVal, pUnit, pChk);
+      setRowStateEta();
       validateWrite();
     });
   });
@@ -407,13 +388,11 @@ function renderStep1() {
 // ---------- Krok 2: Výpočet + odpověď ----------
 
 function renderStep2() {
-  if (!E.content) return;
+  if (!E.content || !problem) return;
   const S = (html) => (E.content.innerHTML = html);
 
-  // shrnutí zápisu
   const lines = [];
   if (writeState) {
-    // P₀
     if (writeState.p0.unknown) {
       lines.push(`P₀ = ? ${writeState.p0.unit}`.trim());
     } else {
@@ -421,7 +400,6 @@ function renderStep2() {
         `P₀ = ${fmtComma(writeState.p0.value)} ${writeState.p0.unit}`.trim()
       );
     }
-    // P
     if (writeState.p.unknown) {
       lines.push(`P = ? ${writeState.p.unit}`.trim());
     } else {
@@ -429,7 +407,6 @@ function renderStep2() {
         `P = ${fmtComma(writeState.p.value)} ${writeState.p.unit}`.trim()
       );
     }
-    // η
     if (writeState.eta.unknown) {
       lines.push("η = ?");
     } else {
@@ -440,30 +417,43 @@ function renderStep2() {
   } else {
     lines.push(
       `P₀ = ${fmtComma(problem.P0.v)} ${problem.P0.u}`,
-      `P  = ${fmtComma(problem.P.v)} ${problem.P.u}`,
-      `η  = ${problem.eta} %`
+      `P = ${fmtComma(problem.P.v)} ${problem.P.u}`,
+      `η = ${problem.eta} %`
     );
   }
 
   const formulaHint =
     problem.type === "eta"
-      ? 'η = P / P₀ (povoleno i „η = P : P₀“)'
+      ? 'např. η = P / P₀'
       : problem.type === "P"
-      ? 'P = η · P₀ (η napiš jako 0,75) nebo „P = (η : 100) · P₀“'
-      : 'P₀ = P / (η : 100) nebo „P₀ = P : (η : 100)“';
+      ? 'např. P = η · P₀'
+      : 'např. P₀ = P / (η : 100)';
 
-  // výsledkový blok
+  const substHint =
+    problem.type === "eta"
+      ? 'např. η = 64 / 120'
+      : problem.type === "P"
+      ? 'např. P = 0,75 · 120'
+      : 'např. P₀ = 90 / 0,75';
+
+  const template =
+    problem.type === "eta"
+      ? `${problem.device.name} má účinnost __ %.`
+      : problem.type === "P"
+      ? `${problem.device.name} má užitečný výkon __.`
+      : `${problem.device.name} má příkon __.`;
+
   let resultBlock = "";
   if (problem.type === "eta") {
     resultBlock = `
-      <label class="section-label">Výsledek — η (%)</label>
-      <input id="resVal" class="input wide" type="text" inputmode="decimal" placeholder="např. 75">
+      <label>Výsledek — η (%)</label>
+      <input id="resVal" class="input" type="text" inputmode="decimal" placeholder="např. 75">
     `;
   } else {
     resultBlock = `
-      <label class="section-label">Výsledek — ${problem.type === "P" ? "P" : "P₀"}</label>
-      <div class="row gap">
-        <input id="resVal" class="input wide" type="text" inputmode="decimal" placeholder="hodnota">
+      <label>Výsledek — ${problem.type === "P" ? "P" : "P₀"}</label>
+      <div class="write-row">
+        <input id="resVal" class="input write-input" type="text" inputmode="decimal" placeholder="hodnota">
         <select id="resUnit" class="input unit-select">
           <option value="">Vyber</option>
           <option>W</option><option>kW</option><option>MW</option>
@@ -471,21 +461,6 @@ function renderStep2() {
       </div>
     `;
   }
-
-  // šablona odpovědi (věta + pole + výběr jednotky)
-  const deviceName =
-    problem.device.name === "Turbína"
-      ? "Turbína"
-      : problem.device.name === "Žárovka" || problem.device.name === "LED žárovka"
-      ? "Žárovka"
-      : "Zařízení";
-
-  const answerPrefix =
-    problem.type === "eta"
-      ? `${deviceName} má účinnost `
-      : problem.type === "P"
-      ? `${deviceName} má užitečný výkon `
-      : `${deviceName} má příkon `;
 
   S(`
     <h2 class="subtitle">2. Výpočet a odpověď</h2>
@@ -495,40 +470,47 @@ function renderStep2() {
       ${lines.map((t) => `<div class="summary-line">${t}</div>`).join("")}
     </div>
 
-    <!-- Nástroje: trojúhelník + kalkulačka -->
-    <div class="tools-row">
-      <div class="tools-buttons">
-        <button type="button" id="btnTriangle" class="btn-secondary small">Trojúhelník – vzorec</button>
-        <button type="button" id="btnCalc" class="btn-secondary small">Kalkulačka</button>
-      </div>
+    <div class="tools-bar">
+      <button id="btnTriangle" class="btn tool-toggle">Trojúhelník</button>
+      <button id="btnCalc" class="btn tool-toggle">Kalkulačka</button>
     </div>
-
-    <div id="toolsPanel" class="tools-panel" hidden>
-      <div id="trianglePanel" class="triangle-panel" hidden>
-        <img src="ucinnost-vzorec.png" alt="Pomůcka – trojúhelník η, P, P₀">
+    <div id="toolsPanel" class="tools-panel">
+      <div id="trianglePanel" class="tool-panel">
+        <img src="ucinnost-vzorec.png" alt="Vzorec účinnosti" class="triangle-img">
       </div>
-      <div id="calcPanel" class="calc-panel" hidden>
+      <div id="calcPanel" class="tool-panel" style="display:none">
         <div class="calc-display">
-          <div id="calcExpression" class="calc-exp"></div>
-          <div id="calcResult" class="calc-res"></div>
+          <div id="calcHistory" class="calc-display-history"></div>
+          <div id="calcMain" class="calc-display-main">0</div>
         </div>
-        <div class="calc-grid">
-          ${["7","8","9","4","5","6","1","2","3","0",".",","].map(n => `
-            <button type="button" class="key key-num" data-k="${n}">${n}</button>
-          `).join("")}
-          ${["+", "−", "×", "÷"].map(op => `
-            <button type="button" class="key key-op" data-k="${op}">${op}</button>
-          `).join("")}
-          <button type="button" class="key key-func" data-k="C">C</button>
-          <button type="button" class="key key-func" data-k="⌫">⌫</button>
-          <button type="button" class="key key-eq" data-k="=">=</button>
+        <div class="calc-keys">
+          <button class="calc-key" data-k="7">7</button>
+          <button class="calc-key" data-k="8">8</button>
+          <button class="calc-key" data-k="9">9</button>
+          <button class="calc-key op" data-k="/">÷</button>
+
+          <button class="calc-key" data-k="4">4</button>
+          <button class="calc-key" data-k="5">5</button>
+          <button class="calc-key" data-k="6">6</button>
+          <button class="calc-key op" data-k="*">×</button>
+
+          <button class="calc-key" data-k="1">1</button>
+          <button class="calc-key" data-k="2">2</button>
+          <button class="calc-key" data-k="3">3</button>
+          <button class="calc-key op" data-k="-">−</button>
+
+          <button class="calc-key" data-k="0">0</button>
+          <button class="calc-key" data-k=",">,</button>
+          <button class="calc-key op" data-k="C">C</button>
+          <button class="calc-key op" data-k="+">+</button>
+
+          <button class="calc-key op" data-k="=" style="grid-column: span 4">=</button>
         </div>
       </div>
     </div>
 
-    <!-- Vzorec -->
-    <div class="section-block">
-      <label class="section-label">Vzorec</label>
+    <div>
+      <label>Vzorec</label>
       <div class="inline-buttons" data-target="formula">
         <button type="button" data-ins="η">η</button>
         <button type="button" data-ins="P">P</button>
@@ -538,12 +520,11 @@ function renderStep2() {
         <button type="button" data-ins=" : ">:</button>
         <button type="button" data-ins=" = ">=</button>
       </div>
-      <input id="formula" class="input wide" type="text" placeholder="${formulaHint}">
+      <input id="formula" class="input" type="text" placeholder="${formulaHint}">
     </div>
 
-    <!-- Dosaď do vzorce -->
-    <div class="section-block">
-      <label class="section-label">Dosaď do vzorce</label>
+    <div>
+      <label>Dosaď do vzorce</label>
       <div class="inline-buttons" data-target="subst">
         <button type="button" data-ins="η">η</button>
         <button type="button" data-ins="P">P</button>
@@ -553,110 +534,128 @@ function renderStep2() {
         <button type="button" data-ins=" : ">:</button>
         <button type="button" data-ins=" = ">=</button>
       </div>
-      <input id="subst" class="input wide" type="text" placeholder='např. η = 64 / 120'>
+      <input id="subst" class="input" type="text" placeholder="${substHint}">
     </div>
 
-    <!-- Výsledek -->
-    <div class="section-block">
+    <div>
       ${resultBlock}
     </div>
 
-    <!-- Odpověď -->
-    <div class="section-block">
-      <label class="section-label">Odpověď</label>
-      <div class="summary-box answer-box">
-        <span>${answerPrefix}</span>
-        <input id="ansVal" class="input answer-input" type="text" inputmode="decimal" placeholder="číslo">
-        <select id="ansUnit" class="input unit-select answer-unit">
-          <option value="">Vyber</option>
-          <option>%</option>
-          <option>W</option><option>kW</option><option>MW</option>
-        </select>
-        <span>.</span>
+    <div>
+      <label>Odpověď</label>
+      <div class="summary-box">
+        ${template.replace("__", '<b id="answerPlaceholder">[doplň výsledek]</b>')}
       </div>
+      <div class="answer-line">
+        <input id="ansVal" class="input answer-input" type="text" inputmode="decimal" placeholder="výsledek">
+        <select id="ansUnit" class="input unit-select">
+          <option value="">Vyber</option>
+          <option>%</option><option>W</option><option>kW</option><option>MW</option>
+        </select>
+      </div>
+      <div id="autoAnswer" class="feedback muted"></div>
     </div>
 
     <div id="calcMsg" class="feedback muted"></div>
   `);
 
- 
-}
-
-
-  // kalkulačka + trojúhelník – jednoduché přepínání panelů
-  const toolsPanel = document.getElementById("toolsPanel");
-  const triPanel   = document.getElementById("trianglePanel");
-  const calcPanel  = document.getElementById("calcPanel");
-
-  const btnTriangle = document.getElementById("btnTriangle");
-  const btnCalc     = document.getElementById("btnCalc");
-
-  function showPanel(which) {
-    if (!toolsPanel) return;
-    toolsPanel.hidden = false;
-    if (which === "triangle") {
-      triPanel.hidden  = false;
-      calcPanel.hidden = true;
-    } else if (which === "calc") {
-      triPanel.hidden  = true;
-      calcPanel.hidden = false;
-    } else {
-      toolsPanel.hidden = true;
-    }
-  }
-  if (btnTriangle) btnTriangle.addEventListener("click", () => showPanel(triPanel.hidden ? "triangle" : "none"));
-  if (btnCalc)     btnCalc.addEventListener("click", () => showPanel(calcPanel.hidden ? "calc" : "none"));
-
-  // (volitelné) jednoduchá kalkulačka – jen spojování znaků, výpočet s eval náhradou
-  if (calcPanel) {
-    const expEl = document.getElementById("calcExpression");
-    const resEl = document.getElementById("calcResult");
-    let exp = "";
-
-    function renderExp() {
-      if (expEl) expEl.textContent = exp;
-    }
-    function setResult(v) {
-      if (resEl) resEl.textContent = v;
-    }
-    calcPanel.querySelectorAll(".key").forEach((btn) => {
+  // symbolová tlačítka
+  document.querySelectorAll(".inline-buttons").forEach((group) => {
+    const targetId = group.getAttribute("data-target");
+    group.querySelectorAll("button").forEach((btn) => {
       btn.addEventListener("click", () => {
-        const k = btn.getAttribute("data-k");
-        if (!k) return;
-        if (k === "C") {
-          exp = "";
-          setResult("");
-        } else if (k === "⌫") {
-          exp = exp.slice(0, -1);
-        } else if (k === "=") {
-          try {
-            const js = exp
-              .replace(/×/g, "*")
-              .replace(/÷/g, "/")
-              .replace(/,/g, ".")
-              .replace(/−/g, "-");
-            const val = Function(`"use strict";return (${js})`)();
-            if (typeof val === "number" && isFinite(val)) {
-              setResult(String(val).replace(".", ","));
-            } else {
-              setResult("?");
-            }
-          } catch {
-            setResult("chyba");
-          }
-        } else {
-          exp += k;
+        let target = document.activeElement;
+        if (!(target && target.id === targetId)) {
+          target = document.getElementById(targetId);
         }
-        renderExp();
+        if (!target) return;
+        const ins = btn.getAttribute("data-ins") || "";
+        const start = target.selectionStart ?? target.value.length;
+        const end = target.selectionEnd ?? target.value.length;
+        target.value =
+          target.value.slice(0, start) + ins + target.value.slice(end);
+        const pos = start + ins.length;
+        target.focus();
+        target.selectionStart = target.selectionEnd = pos;
       });
     });
+  });
+
+  // trojúhelník / kalkulačka
+  const btnTriangle = document.getElementById("btnTriangle");
+  const btnCalc = document.getElementById("btnCalc");
+  const trianglePanel = document.getElementById("trianglePanel");
+  const calcPanel = document.getElementById("calcPanel");
+
+  function showTriangle() {
+    if (!trianglePanel || !calcPanel) return;
+    trianglePanel.style.display = "block";
+    calcPanel.style.display = "none";
+    if (btnTriangle) btnTriangle.classList.add("tool-toggle--active");
+    if (btnCalc) btnCalc.classList.remove("tool-toggle--active");
   }
 
-  // základní validace pro enable/disable Next (pokud používáš STRICT_FLOW)
+  function showCalc() {
+    if (!trianglePanel || !calcPanel) return;
+    trianglePanel.style.display = "none";
+    calcPanel.style.display = "block";
+    if (btnTriangle) btnTriangle.classList.remove("tool-toggle--active");
+    if (btnCalc) btnCalc.classList.add("tool-toggle--active");
+  }
+
+  if (btnTriangle) btnTriangle.addEventListener("click", showTriangle);
+  if (btnCalc) btnCalc.addEventListener("click", showCalc);
+  showTriangle();
+
+  // jednoduchá kalkulačka
+  const calcMain = document.getElementById("calcMain");
+  const calcHistory = document.getElementById("calcHistory");
+  let calcBuffer = "";
+  let calcLast = "";
+
+  function setCalcDisplay(value) {
+    if (calcMain) calcMain.textContent = value;
+  }
+  function setCalcHistory(value) {
+    if (calcHistory) calcHistory.textContent = value;
+  }
+
+  document.querySelectorAll(".calc-key").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const k = btn.getAttribute("data-k");
+      if (!k) return;
+      if (k === "C") {
+        calcBuffer = "";
+        calcLast = "";
+        setCalcDisplay("0");
+        setCalcHistory("");
+        return;
+      }
+      if (k === "=") {
+        try {
+          const expr = calcBuffer.replace(/,/g, ".");
+          const val = Function(`"use strict"; return (${expr})`)();
+          if (typeof val === "number" && isFinite(val)) {
+            calcLast = calcBuffer;
+            calcBuffer = String(val).replace(".", ",");
+            setCalcDisplay(calcBuffer);
+            setCalcHistory(calcLast + " =");
+          }
+        } catch {
+          setCalcDisplay("Chyba");
+        }
+        return;
+      }
+      calcBuffer += k === "," ? "," : k;
+      setCalcDisplay(calcBuffer);
+    });
+  });
+
+  // validace pro povolení Next (pokud chceš)
   function validateCalc() {
-    let ok = true;
-    const resVal  = document.getElementById("resVal");
+    const resVal = document.getElementById("resVal");
     const resUnit = document.getElementById("resUnit");
+    let ok = true;
 
     if (problem.type === "eta") {
       const v = toNum(resVal?.value);
@@ -677,8 +676,7 @@ function renderStep2() {
   validateCalc();
 }
 
-
-// ---------- Render hlavní ----------
+// ---------- Hlavní render ----------
 
 function render() {
   renderZadani();
@@ -692,8 +690,11 @@ function render() {
   if (E.btnBack) E.btnBack.disabled = step === 1;
   if (E.btnCheck) E.btnCheck.style.display = step === 2 ? "" : "none";
 
-  if (step === 1) renderStep1();
-  else renderStep2();
+  if (step === 1) {
+    renderStep1();
+  } else {
+    renderStep2();
+  }
 
   toggleNext();
 }
@@ -704,7 +705,6 @@ function toggleNext() {
   if (!STRICT_FLOW || !E.btnNext) return;
   let allow = true;
   if (step === 1) allow = gates.writeOk;
-  if (step === 2) allow = gates.calcOk;
   E.btnNext.disabled = !allow;
 }
 
@@ -721,12 +721,10 @@ function setStats() {
 
 // ---------- Kontrola (krok 2) ----------
 
-// ---------- Kontrola (krok 2) ----------
-
 function doCheck() {
   if (step !== 2 || !problem) return;
 
-  const box    = document.getElementById("calcMsg");
+  const box = document.getElementById("calcMsg");
   const ansBox = document.getElementById("autoAnswer");
 
   if (box) {
@@ -743,70 +741,50 @@ function doCheck() {
     .replace(/eta/gi, "η");
 
   let goodFormula = false;
-
-   if (problem.type === "eta") {
-    const v = toNum(resVal?.value);
-
-    // povolíme větší toleranci, aby prošly i hodnoty jako 55,5 %
-    const tolAbs = 0.6; // ±0,6 procentního bodu
-
-    if (isFinite(v)) {
-      acc = 100 - Math.min(100, Math.abs(v - problem.eta));
-      ok  = Math.abs(v - problem.eta) <= tolAbs;
-    }
-
-    msg =
-      goodFormula && ok
-        ? `Vzorec i výsledek jsou v pořádku. η ≈ ${fmtComma(problem.eta)} %.`
-        : !goodFormula
-        ? "Vzorec není zapsán správně."
-        : `Výsledek nesouhlasí. Očekává se přibližně ${fmtComma(problem.eta)} %.`;
-
-  if (problem.type === "P") {
-    goodFormula = [
-      "P=η·P₀",
-      "P=(η:100)·P₀",
-      "P=η*P₀",
-    ].includes(formula);
-  }
-  if (problem.type === "P0") {
+  if (problem.type === "eta") {
+    goodFormula = formula === "η=P/P₀" || formula === "η=P:P₀";
+  } else if (problem.type === "P") {
+    goodFormula = ["P=η·P₀", "P=(η:100)·P₀", "P=η*P₀"].includes(formula);
+  } else if (problem.type === "P0") {
     goodFormula =
       formula === "P₀=P/η" ||
       ["P₀=P/(η:100)", "P₀=P:(η:100)"].includes(formula);
   }
 
-  const resVal  = document.getElementById("resVal");
+  const resVal = document.getElementById("resVal");
   const resUnit = document.getElementById("resUnit");
+  const ansVal = document.getElementById("ansVal");
+  const ansUnit = document.getElementById("ansUnit");
 
-  let ok  = false;
+  let ok = false;
   let acc = 0;
   let msg = "";
-  const tolRel = 0.005; // 0,5 %
+  const tolRel = 0.005;
 
   if (problem.type === "eta") {
-  const v = toNum(resVal?.value);
-  if (isFinite(v)) {
-    // dovolíme ±1 % bod (tj. 54–56 je ok pro 55)
-    const diff = Math.abs(v - problem.eta);
-    acc = Math.max(0, 100 - diff);   // jednoduché skóre
-    ok  = diff <= 1.0;               // tolerantnější
-  }
-  msg =
-    goodFormula && ok
-      ? `Vzorec i výsledek jsou v pořádku. η ≈ ${fmtComma(problem.eta)} %.`
-      : !goodFormula
-      ? "Vzorec není zapsán správně."
-      : `Výsledek nesouhlasí. Očekává se přibližně ${fmtComma(problem.eta)} %.`;
-}
-
+    const v = toNum(resVal?.value);
+    const tolAbs = 0.6; // ±0,6 procentního bodu
+    if (isFinite(v)) {
+      const diff = Math.abs(v - problem.eta);
+      acc = Math.max(0, 100 - diff);
+      ok = diff <= tolAbs;
+    }
+    msg =
+      goodFormula && ok
+        ? `Vzorec i výsledek jsou v pořádku. η ≈ ${fmtComma(problem.eta)} %.`
+        : !goodFormula
+        ? "Vzorec není zapsán správně."
+        : `Výsledek nesouhlasí. Očekává se přibližně ${fmtComma(
+            problem.eta
+          )} %.`;
   } else if (problem.type === "P") {
     const v = toNum(resVal?.value);
     const u = resUnit?.value || "W";
-    const got  = v * (F[u] || 1);
+    const got = v * (F[u] || 1);
     const want = problem.PW;
     if (isFinite(got)) {
       acc = 100 - Math.min(100, (Math.abs(got - want) / want) * 100);
-      ok  = Math.abs(got - want) <= Math.max(1e-6, want * tolRel);
+      ok = Math.abs(got - want) <= Math.max(1, want * tolRel);
     }
     msg =
       goodFormula && ok
@@ -814,14 +792,14 @@ function doCheck() {
         : !goodFormula
         ? "Vzorec není zapsán správně."
         : `Výsledek nesouhlasí. Očekává se přibližně ${fmtW(want)}.`;
-  } else {
+  } else if (problem.type === "P0") {
     const v = toNum(resVal?.value);
     const u = resUnit?.value || "W";
-    const got  = v * (F[u] || 1);
+    const got = v * (F[u] || 1);
     const want = problem.P0W;
     if (isFinite(got)) {
       acc = 100 - Math.min(100, (Math.abs(got - want) / want) * 100);
-      ok  = Math.abs(got - want) <= Math.max(1e-6, want * tolRel);
+      ok = Math.abs(got - want) <= Math.max(1, want * tolRel);
     }
     msg =
       goodFormula && ok
@@ -831,8 +809,18 @@ function doCheck() {
         : `Výsledek nesouhlasí. Očekává se přibližně ${fmtW(want)}.`;
   }
 
+  // odpověď musí být dopsaná
+  if (ansVal) {
+    const t = ansVal.value.trim();
+    if (!t) {
+      ok = false;
+      msg = (msg ? msg + " " : "") + "Doplň výsledek také do odpovědi.";
+    }
+  }
+
   if (box) {
-    box.textContent = msg;
+    box.textContent = msg || "Doplň chybějící údaje.";
+    box.classList.remove("muted");
     box.classList.add(ok ? "success" : "error");
   }
 
@@ -845,28 +833,28 @@ function doCheck() {
   }
   setStats();
 
-  // automaticky generovaná slovní odpověď
   if (ansBox) {
     let answer = "";
     if (problem.type === "eta") {
-      answer = `Účinnost ${problem.device.name.toLowerCase()} je přibližně ${fmtComma(
+      answer = `${problem.device.name} má účinnost přibližně ${fmtComma(
         problem.eta
       )} %.`;
     } else if (problem.type === "P") {
-      answer = `Užitečný výkon zařízení je přibližně ${fmtW(problem.PW)}.`;
+      answer = `${problem.device.name} má užitečný výkon přibližně ${fmtW(
+        problem.PW
+      )}.`;
     } else {
-      answer = `Celkový příkon zařízení je přibližně ${fmtW(problem.P0W)}.`;
+      answer = `${problem.device.name} má příkon přibližně ${fmtW(
+        problem.P0W
+      )}.`;
     }
     ansBox.textContent = answer;
+    ansBox.classList.remove("muted");
     ansBox.classList.add(ok ? "success" : "error");
   }
 }
 
-// ---------- Ovládání ----------
-
-
-
-// ---------- Ovládání ----------
+// ---------- Ovládání a start ----------
 
 function newTask(keepStats = true) {
   problem = makeProblem();
@@ -925,13 +913,11 @@ function wire() {
   }
 }
 
-// ---------- Start ----------
-
 document.addEventListener("DOMContentLoaded", () => {
   bindElements();
   const y = document.getElementById("year");
   if (y) y.textContent = String(new Date().getFullYear());
   setStats();
   wire();
-  newTask(true); // hned vygeneruj první úlohu
+  newTask(true);
 });
